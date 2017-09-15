@@ -1,3 +1,9 @@
+dist
+*.swp
+
+# KDE Dolphin
+.directory
+
 # Logs
 logs
 *.log
