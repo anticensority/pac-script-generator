@@ -19,5 +19,8 @@
   "dependencies": {
     "node-fetch": "^1.7.3",
     "punycode": "^2.1.0"
+  },
+  "engines": {
+    "node": "8.x.x"
   }
 }
