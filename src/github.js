@@ -20,9 +20,6 @@ HOWTO INSTALL (possibly outdated)
 
 module.exports = (function() {
 
-  const REPO_URL = 'https://api.github.com/repos/anticensority/for-testing/';
-  // const REPO_URL = 'https://api.github.com/repos/anticensorship-russia/generated-pac-scripts/';
-
   const TOKEN = process.env.GH_TOKEN;
 
   function getGitHubService() {
@@ -73,31 +70,6 @@ module.exports = (function() {
 
   }
 
-  async function _request(token, method, path, data) {
-
-    const config = {
-      method,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token,
-      },
-    };
-    if (data) {
-      Object.assign(config, {
-        body: JSON.stringify(data),
-      });
-    }
-
-    const res = await fetch(REPO_URL + path , config);
-    const text = await res.text();
-    return {
-      getResponseCode: () => res.status,
-      getContentText: () => text,
-    };
-
-  }
-
   function checkIfError(response) {
 
     const code = response.getResponseCode();
@@ -111,7 +83,32 @@ module.exports = (function() {
 
   }
 
-  async function uploadToGitHubAsync(data, dateStr) {
+  async function uploadToGitHubAsync(repoUrl, data, dateStr) {
+
+    async function _request(token, method, path, data) {
+
+      const config = {
+        method,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      };
+      if (data) {
+        Object.assign(config, {
+          body: JSON.stringify(data),
+        });
+      }
+
+      const res = await fetch(repoUrl + path , config);
+      const text = await res.text();
+      return {
+        getResponseCode: () => res.status,
+        getContentText: () => text,
+      };
+
+    }
 
     let err;
     let token;
@@ -124,7 +121,7 @@ module.exports = (function() {
     }
     Logger.log('Got token.');
 
-    var response = await _request(token, 'GET', 'readme/');
+    var response = await _request(token, 'GET', '/readme/');
     err = checkIfError(response);
     if (err) {
       return [err];
@@ -132,7 +129,7 @@ module.exports = (function() {
     const readme = JSON.parse(response.getContentText());
     Logger.log('Got README.');
 
-    var response = await _request(token, 'POST', 'git/trees',
+    var response = await _request(token, 'POST', '/git/trees',
       {
         tree: [{
           path: 'anticensority.pac',
@@ -164,7 +161,7 @@ module.exports = (function() {
     "truncated":false
     }
     */
-    var response = await _request(token, 'POST', 'git/commits',
+    var response = await _request(token, 'POST', '/git/commits',
       {
         message: 'Updated: ' + dateStr,
         tree: tree.sha
@@ -192,7 +189,7 @@ module.exports = (function() {
     */
     const commit = JSON.parse(response.getContentText());
 
-    var response = await _request(token, 'PATCH', 'git/refs/heads/master',
+    var response = await _request(token, 'PATCH', '/git/refs/heads/master',
       {
         sha: commit.sha,
         force: true
