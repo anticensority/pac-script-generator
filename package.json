@@ -4,7 +4,7 @@
   "description": "Script to run on a server to generate anticensority PAC-script",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/publish.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/anticensority/pac-script-generator/issues"
   },
-  "homepage": "https://github.com/anticensority/pac-script-generator#readme"
+  "homepage": "https://github.com/anticensority/pac-script-generator#readme",
+  "dependencies": {
+    "node-fetch": "^1.7.3",
+    "punycode": "^2.1.0"
+  }
 }
