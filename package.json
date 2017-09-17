@@ -18,7 +18,8 @@
   "homepage": "https://github.com/anticensority/pac-script-generator#readme",
   "dependencies": {
     "node-fetch": "^1.7.3",
-    "punycode": "^2.1.0"
+    "punycode": "^2.1.0",
+    "xml2js": "^0.4.19"
   },
   "engines": {
     "node": "8.x.x"
