@@ -1,7 +1,6 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const OAuth = require('simple-oauth2');
 const Logger = require('./logger');
 const Utils = require('./utils')
 
