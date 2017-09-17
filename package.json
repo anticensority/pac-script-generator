@@ -4,7 +4,7 @@
   "description": "Script to run on a server to generate anticensority PAC-script",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/publish.js"
   },
   "repository": {
     "type": "git",
