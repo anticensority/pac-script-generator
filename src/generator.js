@@ -1,9 +1,16 @@
 'use strict';
 
-function fetchIgnoredHosts() {
+const Punycode = require('punycode');
+const Logger = require('./logger');
+const Utils = require('./utils');
+const Proxies = require('./proxies');
+const Algo = require('./algo');
+
+async function fetchIgnoredHostsAsync() {
 
   var url = 'https://bitbucket.org/ValdikSS/antizapret/raw/master/ignorehosts.txt';
-  var res = utils.backedUp(utils.fetch, 'ignored_hosts')(url);
+  // var res = utils.backedUp(utils.fetch, 'ignored_hosts')(url);
+  var res = await Utils.fetch(url);
 
   if ( res.ifOk ) {
     return { content: res.content.trim().split(/\s*\r?\n\s*/g), ifOk: true };
@@ -12,13 +19,13 @@ function fetchIgnoredHosts() {
 
 }
 
-function fetchCsv(urls) {
+async function fetchCsvAsync(urls) {
 
   var url;
   var ifOk = false;
   do {
     url = urls.shift();
-    var res = utils.fetch(url, 'Windows-1251');
+    var res = await Utils.fetch(url, 'Windows-1251');
     var code = res.code;
     var ifOk = res.ifOk;
     if ( ifOk ) {
@@ -39,13 +46,13 @@ function fetchCsv(urls) {
 
 }
 
-module.exports.generatePacScript = (sources) => {
+module.exports.generatePacScriptAsync = async (sources) => {
 
   var csv;
   var source;
   for(var i = 0; i < sources.length; ++i) {
     source = sources[i];
-    csv = fetchCsv(source.urls);
+    csv = await fetchCsvAsync(source.urls);
     if (!csv.error) {
       break;
     }
@@ -53,19 +60,20 @@ module.exports.generatePacScript = (sources) => {
   if (csv.error) {
     return csv;
   }
+  const content = await generatePacFromStringAsync(csv.content);
   return {
-    content: generatePacFromString(csv.content, proxyExports, algoExports),
+    content,
     date: source.date,
-    dateString: source.dateString
+    dateString: source.dateString,
   };
 
 }
 
 //==============GENERATE-PACS.JS============================
 
-function generatePacFromString(input, proxyExports, algoExports) {
+async function generatePacFromStringAsync(input) {
 
-  const typeToProxyString = proxyExports.getProxyString();
+  const typeToProxyString = await Proxies.getProxyStringAsync();
   Logger.log('Generate pac from script...');
 
   var ipsObj   = {};
@@ -91,7 +99,7 @@ function generatePacFromString(input, proxyExports, algoExports) {
     'anticensority.tk': true,
   };
 
-  var res = fetchIgnoredHosts();
+  var res = await fetchIgnoredHostsAsync();
   if (res.content) {
     res.content.push('pro100farma.net\\stanozolol\\');
     for(var i in res.content) {
@@ -204,7 +212,7 @@ function generatePacFromString(input, proxyExports, algoExports) {
     }
     var values = line.split( columnsSep );
     var newIps    = values.shift().split( valuesSep );
-    var newHosts  = values.shift().split( valuesSep ).map( function(h) { return punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
+    var newHosts  = values.shift().split( valuesSep ).map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
     newIps.forEach( function (ip)   {
 
       ip = ip.trim();
@@ -349,9 +357,9 @@ __END__;
   }, []);
 
 
-  const dataExpr = algoExports.generate.dataExpr(hostsArr, ipsArr);
+  const dataExpr = Algo.generate.dataExpr(hostsArr, ipsArr);
 
-  requiredFunctions = algoExports.requiredFunctions || [];
+  const requiredFunctions = Algo.requiredFunctions || [];
   /*
   requiredFunctions.push(
     isCensoredByMaskedIp
@@ -370,7 +378,7 @@ __END__;
     .replace('__HTTPS_PROXIES__', typeToProxyString.HTTPS || ';' )
     .replace('__PROXY_PROXIES__', typeToProxyString.PROXY || ';' )
     .replace('__IS_CENSORED_BY_MASKED_IP_EXPR__', 'false')
-    .replace('__IS_CENSORED_BY_IP_EXPR__', algoExports.generate.isCensoredByIpExpr() )
-    .replace('__IS_CENSORED_BY_HOST_EXPR__', algoExports.generate.isCensoredByHostExpr() );
+    .replace('__IS_CENSORED_BY_IP_EXPR__', Algo.generate.isCensoredByIpExpr() )
+    .replace('__IS_CENSORED_BY_HOST_EXPR__', Algo.generate.isCensoredByHostExpr() );
 
 }

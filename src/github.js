@@ -1,9 +1,14 @@
 'use strict';
 
+const fetch = require('node-fetch');
+const OAuth = require('simple-oauth2');
+const Logger = require('./logger');
+const Utils = require('./utils')
+
 /*
 Inspired by https://mashe.hawksey.info/2016/08/working-with-github-repository-files-using-google-apps-script-examples-in-getting-writing-and-committing-content/
 
-HOWTO INSTALL
+HOWTO INSTALL (possibly outdated)
 
 1. Create an application on github, it must have client id and client secret (or use already created)
    and set "Authorization callback URL" as https://script.google.com/macros/d/<SCRIPT_ID>/usercallback
@@ -14,13 +19,16 @@ HOWTO INSTALL
 
 */
 
-var githubExports = (function() {
+module.exports = (function() {
 
   const REPO_URL = 'https://api.github.com/repos/anticensority/for-testing/';
   // const REPO_URL = 'https://api.github.com/repos/anticensorship-russia/generated-pac-scripts/';
 
+  const TOKEN = process.env.GH_TOKEN;
+
   function getGitHubService() {
 
+    /*
     return OAuth2.createService('GitHub')
     .setAuthorizationBaseUrl("https://github.com/login/oauth/authorize")
     .setTokenUrl("https://github.com/login/oauth/access_token")
@@ -29,6 +37,14 @@ var githubExports = (function() {
     .setScope(['repo'])
     .setCallbackFunction('authCallbackGit')
     .setPropertyStore(PropertiesService.getUserProperties())
+    */
+    return {
+      getAccessTokenAsync() {
+
+        return Promise.resolve([null, TOKEN]);
+
+      },
+    }
 
   }
 
@@ -58,29 +74,35 @@ var githubExports = (function() {
 
   }
 
-  function _request(token, method, path, data) {
+  async function _request(token, method, path, data) {
 
     const config = {
-      method: method,
-      muteHttpExceptions: true,
-      contentType: 'application/json',
+      method,
       headers: {
-        Authorization: 'Bearer ' + token
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
       },
-      responseType: 'json'
     };
     if (data) {
-      config.payload = JSON.stringify(data);
+      Object.assign(config, {
+        body: JSON.stringify(data),
+      });
     }
 
-    return UrlFetchApp.fetch( REPO_URL + path , config );
+    const res = await fetch(REPO_URL + path , config);
+    const text = await res.text();
+    return {
+      getResponseCode: () => res.status,
+      getContentText: () => text,
+    };
 
   }
 
   function checkIfError(response) {
 
     const code = response.getResponseCode();
-    if (!ifSuccessfulCode(code)) {
+    if (!Utils.ifSuccessfulCode(code)) {
       const err = new Error(code + ': ' + response.getContentText());
       err.code = code;
       return err;
@@ -90,18 +112,28 @@ var githubExports = (function() {
 
   }
 
-  function uploadToGitHub(data, dateStr) {
+  async function uploadToGitHubAsync(data, dateStr) {
 
-    const token = getGitHubService().getAccessToken();
-
-    var response = _request(token, 'GET', 'readme/');
-    var err = checkIfError(response);
+    let err;
+    let token;
+    [err, token] = await getGitHubService().getAccessTokenAsync();
     if (err) {
-      return { error: err };
+      return [err];
+    }
+    if (!token) {
+      return [new Error('No token!')];
+    }
+    Logger.log('Got token.');
+
+    var response = await _request(token, 'GET', 'readme/');
+    err = checkIfError(response);
+    if (err) {
+      return [err];
     }
     const readme = JSON.parse(response.getContentText());
+    Logger.log('Got README.');
 
-    var response = _request(token, 'POST', 'git/trees',
+    var response = await _request(token, 'POST', 'git/trees',
       {
         tree: [{
           path: 'anticensority.pac',
@@ -118,10 +150,11 @@ var githubExports = (function() {
       }
      );
 
-    var err = checkIfError(response);
+    err = checkIfError(response);
     if (err) {
-      return { error: err };
+      return [err];
     }
+    Logger.log('POSTed to git/trees.');
 
     const tree = JSON.parse(response.getContentText());
     /*
@@ -132,16 +165,17 @@ var githubExports = (function() {
     "truncated":false
     }
     */
-    var response = _request(token, 'POST', 'git/commits',
+    var response = await _request(token, 'POST', 'git/commits',
       {
         message: 'Updated: ' + dateStr,
         tree: tree.sha
       }
     );
+    Logger.log('POSTed to git/commits.');
 
-    var err = checkIfError(response);
+    err = checkIfError(response);
     if (err) {
-      return { error: err };
+      return [err];
     }
 
     /*
@@ -159,24 +193,26 @@ var githubExports = (function() {
     */
     const commit = JSON.parse(response.getContentText());
 
-    var response = _request(token, 'PATCH', 'git/refs/heads/master',
+    var response = await _request(token, 'PATCH', 'git/refs/heads/master',
       {
         sha: commit.sha,
         force: true
       }
     );
+    Logger.log('PATCHed master.');
 
-    var err = checkIfError(response);
+    err = checkIfError(response);
     if (err) {
-      return { error: err };
+      return [err];
     }
 
-    return {};
+    Logger.log('Reached the final of upload.');
+    return [];
 
   }
 
   return {
-    uploadToGitHub: uploadToGitHub,
+    uploadToGitHubAsync,
     getGitHubAuthURL: getGitHubAuthURL,
     authCallbackGit: authCallbackGit,
   };

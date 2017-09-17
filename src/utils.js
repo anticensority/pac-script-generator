@@ -1,39 +1,46 @@
 'use strict';
 
-function ifSuccessfulCode(status) {
-  return status >= 200 && status < 300 || status === 304;
-}
+const fetch = require('node-fetch');
 
-var utils = {};
-module.exports = utils;
+var Utils = {};
+module.exports = Utils;
 
-utils.fetch = function fetch(url, encoding) {
+Utils.mandatory = function mandatory () {
 
-  const res = UrlFetchApp.fetch(
-    url,
-    {
-      muteHttpExceptions: true // Don't throw 404
-    }
-  );
-  const code = res.getResponseCode();
+  throw new TypeError('Missing required argument. Be explicit if you swallow errors.');
+
+};
+
+Utils.ifSuccessfulCode = (status) =>
+  status >= 200 && status < 300 || status === 304;
+
+Utils.fetch = async function UtilsFetch(url, encoding) {
+
+  const res = await fetch(url);
+  const code = res.status;
+  const text = await res.text();
   const result = {
-    response: res,
-    code: code,
-    ifOk: ifSuccessfulCode(code)
+    response: {
+      getResponseCode: () => code,
+      getContentText: () => text,
+    },
+    code,
+    ifOk: Utils.ifSuccessfulCode(code),
   };
   if( result.ifOk ) {
-    result.content = res.getContentText( encoding || 'UTF-8' );
+    result.content = text;
   }
   return result;
 
-}
+};
 
 /*
 Requirements:
   fun returns plain stringifiable object: { ofOk: Boolean, ... }
   Don't expect methods on this object!
 */
-utils.backedUp = function backedUp(fun, key) {
+/*
+Utils.backedUp = function backedUp(fun, key) {
   // Key must depend on fun and args!
   // Don't forget that JSON.stringify for objects is not persistent!
 
@@ -58,10 +65,13 @@ utils.backedUp = function backedUp(fun, key) {
   }
 
 }
+*/
 
+/*
 function purgeUserProps() {
 
   const userProps = PropertiesService.getUserProperties();
   userProps.deleteAllProperties();
 
 }
+*/

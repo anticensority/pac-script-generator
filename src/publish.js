@@ -1,10 +1,21 @@
+// Author: Ilya Ig. Petrov, ilyaigpetrov@gmail.com, 2017
 'use strict';
 
-// Author: Ilya Ig. Petrov, ilyaigpetrov@gmail.com, 2017
+const Logger = require('./logger');
+const Utils = require('./utils');
+const Generator = require('./generator');
+const GitHub = require('./github');
 
 var _lastFetchDateKey = 'LAST_FETCH_DATE';
 
-function ifShouldUpdateFromSources(lastFetchDate) {
+function strToDate(str) {
+
+  // 2016-12-29 14:00:00 +0000 -> 2016/12/29 14:00:00 +0000
+  return new Date( str.replace(/-/, '/').replace(/-/, '/') );
+
+}
+
+async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
   // TBD: The CVS file is about 7MB in size. Instead of downloading it every 2h we may check first if it was updated.
   // Unfortuntely GoogleScript doesn't allow to make HEAD requests so we have to use RSS feeds for checking.
   Logger.log('LAST FETCH DATE: ' + lastFetchDate);
@@ -43,18 +54,11 @@ function ifShouldUpdateFromSources(lastFetchDate) {
     }
   ];
 
-  function strToDate(str) {
-
-    // 2016-12-29 14:00:00 +0000 -> 2016/12/29 14:00:00 +0000
-    return new Date( str.replace(/-/, '/').replace(/-/, '/') );
-
-  }
-
   const urlsObjects = [];
   do {
     var provider = blockProviders.shift();
     if ( provider.rss && provider.updateElementPath ) {
-      var res = utils.fetch(provider.rss);
+      var res = await Utils.fetch(provider.rss);
       if ( res.ifOk ) {
         var xml = res.content;
         var document = XmlService.parse(xml);
@@ -89,6 +93,7 @@ function ifShouldUpdateFromSources(lastFetchDate) {
 
 }
 
+/*
 function writeToGoogleDrive(pacData) {
 
   var pacName = 'anticensority-1.0.pac';
@@ -106,27 +111,39 @@ function writeToGoogleDrive(pacData) {
   return {};
 
 }
+*/
 
-function forceUpdatePacScript() {
+function forceUpdatePacScriptAsync() {
 
-  updatePacScript(true);
+  updatePacScriptAsync(true);
 
 }
 
-function updatePacScript(ifForced) {
+async function updatePacScriptAsync(ifForced) {
 
   var start = new Date();
 
-  const scriptProperties = PropertiesService.getScriptProperties();
-  var lastFetchDate = scriptProperties.getProperty(_lastFetchDateKey);
+  // const scriptProperties = PropertiesService.getScriptProperties();
+  // var lastFetchDate = scriptProperties.getProperty(_lastFetchDateKey);
+  var lastFetchDate = undefined;
 
-  const sources = ifShouldUpdateFromSources( ifForced ? 0 : lastFetchDate );
+  /*
+  const sources = await ifShouldUpdateFromSourcesAsync( ifForced ? 0 : lastFetchDate );
   if (!sources) {
     Logger.log('Too early to update. New version is not ready.');
     return;
   }
+  */
 
-  var result = generatePacScript(sources);
+  const dateString = '2017-09-17 14:00:00 +0000';
+
+  const sources = [{
+    urls: ['https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv'],
+    date: strToDate(dateString),
+    dateString,
+  }];
+
+  var result = await Generator.generatePacScriptAsync(sources);
   if (result.error) {
     throw result.error;
   }
@@ -134,13 +151,12 @@ function updatePacScript(ifForced) {
 
   Logger.log('PAC script generated. Saving...');
 
-  writeToGoogleDrive(pacData);
-  var err = githubExports.uploadToGitHub(pacData, result.dateString).error;
+  var [err] = await GitHub.uploadToGitHubAsync(pacData, result.dateString);
   if (err) {
     throw err;
   }
 
-  scriptProperties.setProperty(_lastFetchDateKey, result.dateString);
+  // scriptProperties.setProperty(_lastFetchDateKey, result.dateString);
 
   Logger.log('TIME:' + (new Date() - start));
 
@@ -151,3 +167,7 @@ function testPunycode() {
   Logger.log( punycode.toASCII('www.76автобар.рф') );
 
 }
+
+// MAIN
+
+forceUpdatePacScriptAsync();

@@ -1,5 +1,8 @@
 'use strict';
 
+const Logger = require('./logger');
+const Utils = require('./utils');
+
 module.exports = (function() {
 
   var TYPE_TO_PROXIES = {
@@ -27,12 +30,12 @@ module.exports = (function() {
 
   };
 
-  function getIpsFor(host) {
+  async function getIpsForAsync(host) {
 
     const typeToIps = { 1: [], 28: []};
     for(var type in typeToIps) {
 
-      var res = utils.fetch('https://dns.google.com/resolve?type=' + type + '&name=' + host);
+      var res = await Utils.fetch('https://dns.google.com/resolve?type=' + type + '&name=' + host);
       var data = '';
       if (res.ifOk) {
         var json = res.content;
@@ -59,7 +62,7 @@ module.exports = (function() {
 
   }
 
-  function getProxyString() {
+  async function getProxyStringAsync() {
 
     var httpsStr = '';
     var proxyStr = '';
@@ -71,10 +74,11 @@ module.exports = (function() {
 
     });
 
-    TYPE_TO_PROXIES.PROXY.forEach( function(proxy) {
+    TYPE_TO_PROXIES.PROXY.forEach( async function(proxy) {
 
       proxyStr += 'PROXY ' + proxy.host + ':' + proxy.port + '; ';
-      var res = utils.backedUp(getIpsFor, 'proxy_ips_' + proxy.host)(proxy.host);
+      // var res = Utils.backedUp(getIpsForAsync, 'proxy_ips_' + proxy.host)(proxy.host);
+      var res = await getIpsForAsync(proxy.host);
       if (!res.ifOk) {
         Logger.log('Failed to get ips for: ' + proxy.host);
         return;
@@ -91,7 +95,7 @@ module.exports = (function() {
   };
 
   return {
-    getProxyString: getProxyString,
+    getProxyStringAsync,
   };
 
 })();
