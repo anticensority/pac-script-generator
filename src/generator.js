@@ -196,17 +196,12 @@ async function generatePacFromStringAsync(input) {
 
   Logger.log('Splitting input...');
   var lines = input.split('\n');
-  Logger.log(lines[87788]);
-  Logger.log(lines[87789]);
   const remoteUpdated = lines[0].trim();
   Logger.log('For each line..');
   const ipv4v6Re = /^(?:(?:[0-9]{1,3}\.){3}[0-9]{1,3}|(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4})$/i;
   for( var ii = 1; ii < lines.length; ++ii ) {
 
     var line = lines[ii].trim();
-    // Logger.log(ii);
-    // Logger.log(lines[ii]);
-    // Logger.log(line);
     if (!line) {
       continue;
     }
