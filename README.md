@@ -11,3 +11,6 @@ Script to run on a server to generate anticensority PAC-script.
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/anticensority/pac-script-generator/tree/production)
 
+### Just a Test
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
