@@ -1,5 +1,5 @@
 {
-  "name": "Anticensority PAC-Script Generator",
+  "name": "AC PAC-Script Generator",
   "descripton": "Generates PAC-script based on dump.csv from zapret-info/z-i repo.",
   "keywords": [
     "PAC-script",
