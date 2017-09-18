@@ -30,5 +30,10 @@
   "image": "heroku/nodejs",
   "addons": [
     "scheduler:standard"
-  ]
+  ],
+  "formation": {
+    "web": {
+      "quantity": 0
+    }
+  }
 }
