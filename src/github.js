@@ -53,11 +53,7 @@ module.exports = (function() {
     }
 
     let err;
-    let token;
-    [err, token] = await getGitHubService().getAccessTokenAsync();
-    if (err) {
-      return [err];
-    }
+    const token = TOKEN;
     if (!token) {
       return [new Error('No token!')];
     }
