@@ -77,7 +77,6 @@ module.exports = (function() {
     TYPE_TO_PROXIES.PROXY.forEach( async function(proxy) {
 
       proxyStr += 'PROXY ' + proxy.host + ':' + proxy.port + '; ';
-      // var res = Utils.backedUp(getIpsForAsync, 'proxy_ips_' + proxy.host)(proxy.host);
       var res = await getIpsForAsync(proxy.host);
       if (!res.ifOk) {
         Logger.log('Failed to get ips for: ' + proxy.host);
