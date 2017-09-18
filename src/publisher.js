@@ -1,7 +1,7 @@
 // Author: Ilya Ig. Petrov, ilyaigpetrov@gmail.com, 2017
 'use strict';
 
-throw new Error('TESTING AB!');
+throw new Error('TESTING AB222222!');
 
 const Assert = require('assert');
 const Xml2Js = require('xml2js');
