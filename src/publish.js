@@ -8,8 +8,9 @@ const Utils = require('./utils');
 const Generator = require('./generator');
 const GitHub = require('./github');
 
-// const REPO_URL = 'https://api.github.com/repos/anticensorship-russia/generated-pac-scripts';
-const REPO_URL = 'https://api.github.com/repos/anticensority/for-testing';
+const GH_REPO = process.env.GH_REPO
+Assert(GH_REPO, 'GH_REPO env variable is required. Example: anticensority/generated-pac-scripts');
+const REPO_URL = `https://api.github.com/repos/${GH_REPO}`;
 
 function strToDate(str) {
 
@@ -19,7 +20,7 @@ function strToDate(str) {
 }
 
 async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
-  // TBD: The CVS file is about 7MB in size. Instead of downloading it every 2h we may check first if it was updated.
+  // The CVS file is about 7MB in size. Instead of downloading it every 2h we may check first if it was updated.
   // Unfortuntely GoogleScript doesn't allow to make HEAD requests so we have to use RSS feeds for checking.
   Logger.log('LAST FETCH DATE: ' + lastFetchDate);
 

@@ -9,7 +9,6 @@ const Algo = require('./algo');
 async function fetchIgnoredHostsAsync() {
 
   var url = 'https://bitbucket.org/ValdikSS/antizapret/raw/master/ignorehosts.txt';
-  // var res = utils.backedUp(utils.fetch, 'ignored_hosts')(url);
   var res = await Utils.fetch(url);
 
   if ( res.ifOk ) {

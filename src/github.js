@@ -1,74 +1,16 @@
 'use strict';
 
-const fetch = require('node-fetch');
+const Assert = require('assert');
+const Fetch = require('node-fetch');
 const Logger = require('./logger');
-const Utils = require('./utils')
-
-/*
-Inspired by https://mashe.hawksey.info/2016/08/working-with-github-repository-files-using-google-apps-script-examples-in-getting-writing-and-committing-content/
-
-HOWTO INSTALL (possibly outdated)
-
-1. Create an application on github, it must have client id and client secret (or use already created)
-   and set "Authorization callback URL" as https://script.google.com/macros/d/<SCRIPT_ID>/usercallback
-2. This window > File > Project properties > Script properties > Add GH_CLIENT_ID and GH_CLIENT_SECRET
-3. Uncomment functions at the bottom of this file.
-4. This window > Select function > getGitHubAuthURL > run > get url from logs > visit it and auth with github > receive "success".
-5. Configure your triggers.
-
-*/
+const Utils = require('./utils');
 
 module.exports = (function() {
 
+  // TOKEN is procured via oauth + GH_CLIENT + GH_SECRET,
+  // you may use lib like npm/simple-oauth2.
   const TOKEN = process.env.GH_TOKEN;
-
-  function getGitHubService() {
-
-    /*
-    return OAuth2.createService('GitHub')
-    .setAuthorizationBaseUrl("https://github.com/login/oauth/authorize")
-    .setTokenUrl("https://github.com/login/oauth/access_token")
-    .setClientId(PropertiesService.getScriptProperties().getProperty('GH_CLIENT_ID'))
-    .setClientSecret(PropertiesService.getScriptProperties().getProperty('GH_CLIENT_SECRET'))
-    .setScope(['repo'])
-    .setCallbackFunction('authCallbackGit')
-    .setPropertyStore(PropertiesService.getUserProperties())
-    */
-    return {
-      getAccessTokenAsync() {
-
-        return Promise.resolve([null, TOKEN]);
-
-      },
-    }
-
-  }
-
-  /**
-  * Logs the redict URI to register in the Google Developers Console, etc.
-  */
-  function getGitHubAuthURL() {
-
-    var service = getGitHubService();
-    var authorizationUrl = service.getAuthorizationUrl();
-    Logger.log(authorizationUrl);
-    return '<a href="' + authorizationUrl + '">Sign in with GitHub</a>'
-
-  }
-
-  /**
-  * Handles the OAuth callback.
-  */
-  function authCallbackGit(request) {
-
-    const ghService = getGitHubService();
-    const authorized = ghService.handleCallback(request);
-    if (!authorized) {
-      return HtmlService.createHtmlOutput('Denied');
-    }
-    return HtmlService.createHtmlOutput('Success!');
-
-  }
+  Assert(TOKEN, 'GH_TOKEN env variable is required, see sources.');
 
   function checkIfError(response) {
 
@@ -101,7 +43,7 @@ module.exports = (function() {
         });
       }
 
-      const res = await fetch(repoUrl + path , config);
+      const res = await Fetch(repoUrl + path , config);
       const text = await res.text();
       return {
         getResponseCode: () => res.status,
@@ -209,17 +151,6 @@ module.exports = (function() {
 
   return {
     uploadToGitHubAsync,
-    getGitHubAuthURL: getGitHubAuthURL,
-    authCallbackGit: authCallbackGit,
   };
 
 })();
-
-/*
-function getGitHubAuthURL() {
-  return githubExports.getGitHubAuthURL();
-}
-function authCallbackGit(request) {
-  return githubExports.authCallbackGit(request);
-}
-*/
