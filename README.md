@@ -20,5 +20,5 @@ Script to run on a server to generate anticensority PAC-script.
 ## Error Reporting
 
 5. I strongly recommend configuring some error monitoring addon for Heroku.
-   Unfortunately I can't advise any dew to lack of long-term experience, you
+   Unfortunately I can't advise any due to lack of long-term experience, you
    may try Airbrake (requires source modification), Papertail (try "npm ERR" search phrase).
