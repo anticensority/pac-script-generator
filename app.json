@@ -23,7 +23,7 @@
   "environments": {
     "test": {
       "env": {
-        GH_REPO: "anticensority/for-testing"
+        "GH_REPO": "anticensority/for-testing"
       }
     }
   },
