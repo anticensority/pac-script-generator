@@ -1,6 +1,8 @@
 // Author: Ilya Ig. Petrov, ilyaigpetrov@gmail.com, 2017
 'use strict';
 
+throw new Error('TESTING AB!');
+
 const Assert = require('assert');
 const Xml2Js = require('xml2js');
 const Logger = require('./logger');
@@ -171,15 +173,6 @@ function testPunycode() {
 
 }
 
-// MAIN
-
-let ifForce = false;
-const args = process.argv.slice(2);
-if (args.length) {
-  Assert(args.length === 1);
-  const a = args.shift();
-  Assert(a === '--force');
-  ifForce = true;
-}
-
-updatePacScriptAsync(ifForce);
+module.exports = {
+  updatePacScriptAsync,
+};
