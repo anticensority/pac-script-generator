@@ -89,7 +89,8 @@ async function generatePacFromStringAsync(input) {
     'new-team.org': true,
     'fast-torrent.ru': true,
     'pornreactor.cc': true,
-    'joyreactor.cc': true, 
+    'joyreactor.cc': true,
+    'nnm-club.name': true,
     // Rutracker complaints:
     "static.t-ru.org": true,
     "rutrk.org": true,
