@@ -91,10 +91,12 @@ async function generatePacFromStringAsync(input) {
     'pornreactor.cc': true,
     'joyreactor.cc': true,
     'nnm-club.name': true,
+    'rutor.info': true,
+    'free-rutor.org': true,
     // Rutracker complaints:
     "static.t-ru.org": true,
     "rutrk.org": true,
-    "nnm-club.ws": true,    
+    "nnm-club.ws": true,
   };
   var ignoredHosts = {
     'anticensority.tk': true,
