@@ -244,6 +244,10 @@ async function generatePacFromStringAsync(input) {
     });
 
   };
+  [
+    '104.18.52.38',
+    '104.18.53.38',
+  ].forEach((ip) => { delete ipsObj[ip]; })
   Logger.log('Done.');
 
   /*
