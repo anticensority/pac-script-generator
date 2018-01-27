@@ -96,7 +96,9 @@ async function generatePacFromStringAsync(input) {
     // Rutracker complaints:
     "static.t-ru.org": true,
     "rutrk.org": true,
+    
     "nnm-club.ws": true,
+    "lostfilm.tv": true,
   };
   var ignoredHosts = {
     'anticensority.tk': true,
