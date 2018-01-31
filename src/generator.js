@@ -99,8 +99,6 @@ async function generatePacFromStringAsync(input) {
     
     "nnm-club.ws": true,
     "lostfilm.tv": true,
-    
-    "trueflip.io": true,
   };
   var ignoredHosts = {
     'anticensority.tk': true,
