@@ -61,42 +61,46 @@ async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
   const urlsObjects = [];
   do {
     var provider = blockProviders.shift();
-    if ( provider.rss && provider.updateElementPath ) {
-      var res = await Utils.fetch(provider.rss);
-      if ( res.ifOk ) {
-        var xml = res.content;
-        var [err, document] = await new Promise((resolve) => Xml2Js.parseString(
-          xml,
-          {
-            explicitRoot: false,
-            trim: true,
-          },
-          (...args) => resolve(args),
-        ));
-        if (err) {
-          throw err;
-        }
-        var parent = document;
-        var element;
-        do {
-          element = provider.updateElementPath.shift()
-          parent = parent[element];
-        } while(provider.updateElementPath.length);
-        const title = parent;
-        const groups = /Updated:\s+(\d\d\d\d-\d\d-\d\d\s+\d\d:\d\d:\d\d\s+[+-]\d\d\d\d)/.exec(title);
-        var dateString = groups && groups[1];
-        Logger.log(provider.urls[0] + ' ' + dateString);
-        if (!dateString) {
-          continue;
-        }
-        if ( !lastFetchDate || strToDate( dateString ) > strToDate( lastFetchDate )) {
-          urlsObjects.push({
-            urls: provider.urls,
-            date: strToDate(dateString),
-            dateString: dateString
-          });
+    try {
+      if ( provider.rss && provider.updateElementPath ) {
+        var res = await Utils.fetch(provider.rss);
+        if ( res.ifOk ) {
+          var xml = res.content;
+          var [err, document] = await new Promise((resolve) => Xml2Js.parseString(
+            xml,
+            {
+              explicitRoot: false,
+              trim: true,
+            },
+            (...args) => resolve(args),
+          ));
+          if (err) {
+            throw err;
+          }
+          var parent = document;
+          var element;
+          do {
+            element = provider.updateElementPath.shift()
+            parent = parent[element];
+          } while(provider.updateElementPath.length);
+          const title = parent;
+          const groups = /Updated:\s+(\d\d\d\d-\d\d-\d\d\s+\d\d:\d\d:\d\d\s+[+-]\d\d\d\d)/.exec(title);
+          var dateString = groups && groups[1];
+          Logger.log(provider.urls[0] + ' ' + dateString);
+          if (!dateString) {
+            continue;
+          }
+          if ( !lastFetchDate || strToDate( dateString ) > strToDate( lastFetchDate )) {
+            urlsObjects.push({
+              urls: provider.urls,
+              date: strToDate(dateString),
+              dateString: dateString
+            });
+          }
         }
       }
+    } catch(err) {
+      continue;
     }
   } while(blockProviders.length);
   if (urlsObjects.length) {
@@ -105,26 +109,6 @@ async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
   return false;
 
 }
-
-/*
-function writeToGoogleDrive(pacData) {
-
-  var pacName = 'anticensority-1.0.pac';
-  var pacMime = 'application/x-ns-proxy-autoconfig';
-  var files = DriveApp.getFilesByName(pacName);
-  if (files.hasNext()) {
-    while(files.hasNext()) {
-      var file = files.next();
-      file.setContent(pacData);
-    }
-  } else {
-    DriveApp.createFile(pacName, pacData, pacMime);
-  }
-
-  return {};
-
-}
-*/
 
 function forceUpdatePacScriptAsync() {
 
