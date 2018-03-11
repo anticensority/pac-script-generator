@@ -99,6 +99,7 @@ async function generatePacFromStringAsync(input) {
     
     "nnm-club.ws": true,
     "lostfilm.tv": true,
+    "e-hentai.org": true,
   };
   var ignoredHosts = {
     'anticensority.tk': true,
