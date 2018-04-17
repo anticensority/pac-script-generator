@@ -96,7 +96,7 @@ async function generatePacFromStringAsync(input) {
     // Rutracker complaints:
     "static.t-ru.org": true,
     "rutrk.org": true,
-    
+
     "nnm-club.ws": true,
     "lostfilm.tv": true,
     "e-hentai.org": true,
@@ -258,6 +258,7 @@ async function generatePacFromStringAsync(input) {
 
   /*
   // MASKS LOGIC starts.
+
   // Copied from Chromium sources.
   function convert_addr(ipchars) {
     var bytes = ipchars.split('.');
@@ -309,13 +310,13 @@ if (__IS_IE__()) {
   throw new TypeError('https://rebrand.ly/ac-anticensority');
 }
 
-const HTTPS_PROXIES = '__HTTPS_PROXIES__'; //'HTTPS proxy.antizapret.prostovpn.org:3143; HTTPS gw2.anticenz.org:443';
-const PROXY_PROXIES = '__PROXY_PROXIES__'; //'PROXY proxy.antizapret.prostovpn.org:3128; PROXY gw2.anticenz.org:8080;';
+const HTTPS_PROXIES = '__HTTPS_PROXIES__'; //'HTTPS proxy.antizapret.prostovpn.org:3143; ';
+const PROXY_PROXIES = '__PROXY_PROXIES__'; //'PROXY proxy.antizapret.prostovpn.org:3128; ';
 const PROXY_STRING  = HTTPS_PROXIES + PROXY_PROXIES + 'DIRECT';
-    
+
 __DATA_EXPR__;
 __REQUIRED_FUNS__;
-    
+
 function FindProxyForURL(url, host) {
 
   // Remove last dot.
@@ -325,7 +326,7 @@ function FindProxyForURL(url, host) {
   __MUTATE_HOST_EXPR__;
 
   return (function isCensored(){
-    
+
     // In the worst case both IP and host checks must be done (two misses).
     // IP hits are more probeble, so we check them first.
     const ip = dnsResolve(host);
