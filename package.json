@@ -17,9 +17,10 @@
   },
   "homepage": "https://github.com/anticensority/pac-script-generator#readme",
   "dependencies": {
-    "airbrake": "^2.1.0",
+    "airbrake-js": "^1.0.6",
     "node-fetch": "^1.7.3",
     "punycode": "^2.1.0",
+    "request": "^2.83.0",
     "xml2js": "^0.4.19"
   },
   "engines": {

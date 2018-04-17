@@ -1,17 +1,17 @@
 'use strict';
 
 const Assert = require('assert');
-const Airbrake = require('airbrake')
+const Airbrake = require('airbrake-js')
 
 const AB_PROJECT_ID = process.env.AIRBRAKE_PROJECT_ID;
 const AB_API_KEY = process.env.AIRBRAKE_API_KEY;
+
 Assert(AB_PROJECT_ID && AB_API_KEY, 'Provide Airbrake credentials!');
 
-const airbrake = Airbrake.createClient(
-  AB_PROJECT_ID,
-  AB_API_KEY,
-);
-airbrake.handleExceptions();
+const airbrake = new Airbrake({
+  projectId: AB_PROJECT_ID,
+  projectKey: AB_API_KEY,
+});
 
 const Publisher = require('./publisher');
 
