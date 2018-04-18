@@ -282,11 +282,11 @@ async function generatePacFromStringAsync(input) {
     const ipAddr = convert_addr(ip);
 
     for (const pair of maskedAddrMaskAddrPairs) {
-        const maskedAddr  = pair[0];
-        const maskAddr = pair[1];
-        if((ipAddr & maskAddr) === maskedAddr) {
-            return true;
-        }
+      const maskedAddr  = pair[0];
+      const maskAddr = pair[1];
+      if((ipAddr & maskAddr) === maskedAddr) {
+        return true;
+      }
     }
     return false;
 
@@ -327,6 +327,7 @@ __REQUIRED_FUNS__;
 
 function FindProxyForURL(url, host) {
 
+  let ifByMaskedIp = false;
   // Remove last dot.
   if (host[host.length - 1] === '.') {
     host = host.substring(0, host.length - 1);
@@ -338,13 +339,16 @@ function FindProxyForURL(url, host) {
     // In the worst case both IP and host checks must be done (two misses).
     // IP hits are more probeble, so we check them first.
     const ip = dnsResolve(host);
-    if (ip && (__IS_CENSORED_BY_MASKED_IP_EXPR__ || __IS_CENSORED_BY_IP_EXPR__)) {
-      return true;
-    };
+    if (ip) {
+      ifByMaskedIp = __IS_CENSORED_BY_MASKED_IP_EXPR__;
+      if (ifByMaskedIp || __IS_CENSORED_BY_IP_EXPR__) {
+        return true;
+      };
+    }
 
     return (__IS_CENSORED_BY_HOST_EXPR__);
 
-  })() ? PROXY_STRING : 'DIRECT';
+  })() ? (ifByMaskedIp ? 'PROXY ccahiha.antizapret.prostovpn.org:3128; DIRECT' : PROXY_STRING) : 'DIRECT';
 
 }
 __END__;
