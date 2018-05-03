@@ -101,6 +101,13 @@ async function generatePacFromStringAsync(input) {
     "lostfilm.tv": true,
     "e-hentai.org": true,
     "deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2M
+    // New servers protection, Google:
+    "google.com": true,
+    "google.ru": true,
+    "googleapis.com": true,
+    "gstatic.com": true,
+    "blogspot.com": true,
+    "blogspot.ru": true,
   };
   var ignoredHosts = {
     'anticensority.tk': true,
@@ -215,39 +222,44 @@ async function generatePacFromStringAsync(input) {
     var values = line.split( columnsSep );
     var newIps    = values.shift().split( valuesSep );
     var newHosts  = values.shift().split( valuesSep ).map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
-    newIps.forEach( function (ip)   {
+    var newUrls   = values.shift().split( valuesSep ).filter((url) => url);
+    const ifDomainless = newHosts.length === 0 && newUrls.length === 0 || newIps.toString() === newHosts.toString();
+    if (ifDomainless) {
+      newIps.forEach( function (ip)   {
 
-      ip = ip.trim();
-      if (!ip) {
-        return;
-      }
-      if (ipv4v6Re.test(ip)) {
-        ipsObj[ip] = true;
-      } else {
-        const parts = ip.split('/');
-        const addr = parts[0];
-        if (!( parts.length === 2 && ipv4v6Re.test(addr) )) {
-          throw new Error('Can\'t parse ip:' + ip);
+        ip = ip.trim();
+        if (!ip) {
+          return;
         }
-        const mask = parts[1];
-        ipToMaskInt[addr] = parseInt(mask);
-      }
+        if (ipv4v6Re.test(ip)) {
+          ipsObj[ip] = true;
+        } else {
+          const parts = ip.split('/');
+          const addr = parts[0];
+          if (!( parts.length === 2 && ipv4v6Re.test(addr) )) {
+            throw new Error('Can\'t parse ip:' + ip);
+          }
+          const mask = parts[1];
+          ipToMaskInt[addr] = parseInt(mask);
+        }
 
-    });
-    newHosts.forEach( function (host) {
+      });
+    } else {
+      newHosts.forEach( function (host) {
 
-      host = host.trim();
-      if (!host) {
-        return;
-      }
-      if (ipv4v6Re.test(host)) {
-        ipsObj[host] = true;
-      }
-      else {
-        addToTree(host);
-      }
+        host = host.trim();
+        if (!host) {
+          return;
+        }
+        if (ipv4v6Re.test(host)) {
+          ipsObj[host] = true;
+        }
+        else {
+          addToTree(host);
+        }
 
-    });
+      });
+    }
 
   };
   [
