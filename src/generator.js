@@ -221,8 +221,11 @@ async function generatePacFromStringAsync(input) {
     }
     var values = line.split( columnsSep );
     var newIps    = values.shift().split( valuesSep );
-    var newHosts  = values.shift().split( valuesSep ).map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
-    var newUrls   = values.shift().split( valuesSep ).filter((url) => url);
+    var newHosts  = values.shift().split( valuesSep )
+      .filter((host) => host)
+      .map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
+    var newUrls   = values.shift().split( valuesSep )
+      .filter((url) => url);
     const ifDomainless = newHosts.length === 0 && newUrls.length === 0 || newIps.toString() === newHosts.toString();
     if (ifDomainless) {
       newIps.forEach( function (ip)   {
