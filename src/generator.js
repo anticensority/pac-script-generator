@@ -355,7 +355,7 @@ function FindProxyForURL(url, host) {
 
     const ip = dnsResolve(host);
     if (ip) {
-      if (__IS_CENSORED_BY_IP_EXPR__) {
+      if (false && __IS_CENSORED_BY_IP_EXPR__) { // TUNRED OFF TEMPORARY.
         return true;
       }
       ifByMaskedIp = __IS_CENSORED_BY_MASKED_IP_EXPR__;
