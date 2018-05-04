@@ -104,7 +104,7 @@ async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
     }
   } while(blockProviders.length);
   if (urlsObjects.length) {
-    return urlsObjects.sort( function(a, b) { return a.date - b.date; } );
+    return urlsObjects.sort( function(a, b) { return b.date - a.date; } );
   }
   return false;
 
