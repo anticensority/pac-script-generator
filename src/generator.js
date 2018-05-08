@@ -101,13 +101,6 @@ async function generatePacFromStringAsync(input) {
     "lostfilm.tv": true,
     "e-hentai.org": true,
     "deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2M
-    // New servers protection, Google:
-    "google.com": true,
-    "google.ru": true,
-    "googleapis.com": true,
-    "gstatic.com": true,
-    "blogspot.com": true,
-    "blogspot.ru": true,
   };
   var ignoredHosts = {
     'anticensority.tk': true,
