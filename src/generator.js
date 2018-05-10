@@ -213,14 +213,15 @@ async function generatePacFromStringAsync(input) {
       continue;
     }
     var values = line.split( columnsSep );
-    var newIps    = values.shift().split( valuesSep );
+    var newIps    = values.shift().split( valuesSep )
+      .filter((ip) => ip);
     var newHosts  = values.shift().split( valuesSep )
       .filter((host) => host)
       .map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
     var newUrls   = values.shift().split( valuesSep )
       .filter((url) => url);
-    const ifDomainless = newHosts.length === 0 && newUrls.length === 0 || newIps.toString() === newHosts.toString();
-    if (ifDomainless) {
+    // const ifDomainless = newHosts.length === 0 && newUrls.length === 0 || newIps.toString() === newHosts.toString();
+    // if (ifDomainless) {
       newIps.forEach( function (ip)   {
 
         ip = ip.trim();
@@ -240,7 +241,7 @@ async function generatePacFromStringAsync(input) {
         }
 
       });
-    } else {
+    // } else {
       newHosts.forEach( function (host) {
 
         host = host.trim();
@@ -255,7 +256,7 @@ async function generatePacFromStringAsync(input) {
         }
 
       });
-    }
+    // }
 
   };
   [
@@ -336,6 +337,7 @@ __REQUIRED_FUNS__;
 
 function FindProxyForURL(url, host) {
 
+  let ifByHost = false;
   let ifByMaskedIp = false;
   // Remove last dot.
   if (host[host.length - 1] === '.') {
@@ -345,13 +347,14 @@ function FindProxyForURL(url, host) {
 
   return (function isCensored(){
 
-    if (__IS_CENSORED_BY_HOST_EXPR__) {
+    ifByHost = __IS_CENSORED_BY_HOST_EXPR__;
+    if (ifByHost) {
       return true;
     }
 
     const ip = dnsResolve(host);
     if (ip) {
-      if (false && __IS_CENSORED_BY_IP_EXPR__) { // TUNRED OFF TEMPORARY.
+      if (__IS_CENSORED_BY_IP_EXPR__) {
         return true;
       }
       ifByMaskedIp = __IS_CENSORED_BY_MASKED_IP_EXPR__;
@@ -362,7 +365,16 @@ function FindProxyForURL(url, host) {
 
     return false;
 
-  })() ? (ifByMaskedIp ? 'PROXY ccahiha.antizapret.prostovpn.org:3128; DIRECT' : PROXY_STRING) : 'DIRECT';
+  })()
+    ? (
+      ifByMaskedIp
+        ? 'PROXY ccahiha.antizapret.prostovpn.org:3128; DIRECT'
+        : (
+          ifByHost
+            ? PROXY_STRING // By domain name.
+            : 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT'
+        )
+    ) : 'DIRECT';
 
 }
 __END__;
