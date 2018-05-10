@@ -327,9 +327,11 @@ if (__IS_IE__()) {
   throw new TypeError('https://rebrand.ly/ac-anticensority');
 }
 
-const HTTPS_PROXIES = '__HTTPS_PROXIES__'; //'HTTPS proxy.antizapret.prostovpn.org:3143; ';
-const PROXY_PROXIES = '__PROXY_PROXIES__'; //'PROXY proxy.antizapret.prostovpn.org:3128; ';
-const PROXY_STRING  = HTTPS_PROXIES + PROXY_PROXIES + 'DIRECT';
+//const HTTPS_PROXIES = '__HTTPS_PROXIES__'; //'HTTPS proxy.antizapret.prostovpn.org:3143; ';
+//const PROXY_PROXIES = '__PROXY_PROXIES__'; //'PROXY proxy.antizapret.prostovpn.org:3128; ';
+//const PROXY_STRING  = HTTPS_PROXIES + PROXY_PROXIES + 'DIRECT';
+
+const PROXY_STRING = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT';
 
 __MASKED_DATA__;
 __DATA_EXPR__;
@@ -365,16 +367,7 @@ function FindProxyForURL(url, host) {
 
     return false;
 
-  })()
-    ? (
-      ifByMaskedIp
-        ? 'PROXY ccahiha.antizapret.prostovpn.org:3128; DIRECT'
-        : (
-          ifByHost
-            ? PROXY_STRING // By domain name.
-            : 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT'
-        )
-    ) : 'DIRECT';
+  })() ? PROXY_STRING : 'DIRECT';
 
 }
 __END__;
