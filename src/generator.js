@@ -72,7 +72,7 @@ module.exports.generatePacScriptAsync = async (sources) => {
 
 async function generatePacFromStringAsync(input) {
 
-  const typeToProxyString = await Proxies.getProxyStringAsync();
+  //const typeToProxyString = await Proxies.getProxyStringAsync();
   Logger.log('Generate pac from script...');
 
   var ipsObj   = {};
@@ -412,8 +412,8 @@ __END__;
     .replace('__REQUIRED_FUNS__;', requiredFunctions.join(';\n') + ';\n')
     .replace('__MUTATE_HOST_EXPR__;', '')
     .replace('__IS_IE__()', '/*@cc_on!@*/!1')
-    .replace('__HTTPS_PROXIES__', typeToProxyString.HTTPS || ';' )
-    .replace('__PROXY_PROXIES__', typeToProxyString.PROXY || ';' )
+    //.replace('__HTTPS_PROXIES__', typeToProxyString.HTTPS || ';' )
+    //.replace('__PROXY_PROXIES__', typeToProxyString.PROXY || ';' )
     .replace('__IS_CENSORED_BY_MASKED_IP_EXPR__', 'isCensoredByMaskedIp(ip)')
     .replace('__IS_CENSORED_BY_IP_EXPR__', Algo.generate.isCensoredByIpExpr() )
     .replace('__IS_CENSORED_BY_HOST_EXPR__', Algo.generate.isCensoredByHostExpr() );
