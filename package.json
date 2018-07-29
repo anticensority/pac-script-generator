@@ -21,6 +21,7 @@
     "node-fetch": "^1.7.3",
     "punycode": "^2.1.0",
     "request": "^2.83.0",
+    "rollbar": "^2.4.4",
     "xml2js": "^0.4.19"
   },
   "engines": {
