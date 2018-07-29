@@ -1,5 +1,6 @@
 'use strict';
 
+/*
 const Assert = require('assert');
 const Airbrake = require('airbrake-js')
 
@@ -12,6 +13,7 @@ const airbrake = new Airbrake({
   projectId: AB_PROJECT_ID,
   projectKey: AB_API_KEY,
 });
+*/
 
 const Publisher = require('./publisher');
 
