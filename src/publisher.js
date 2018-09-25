@@ -26,6 +26,18 @@ async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
 
   var blockProviders = [
     {
+      urls: [
+        'http://sourceforge.net/p/z-i/code-0/HEAD/tree/dump.csv?format=raw',
+        'https://svn.code.sf.net/p/z-i/code-0/dump.csv'
+      ],
+      //rss: 'http://sourceforge.net/p/z-i/activity/feed?source=project_activity', // Still works.
+      rss: 'https://sourceforge.net/p/z-i/code-0/feed',
+      /* RSS update date:
+      updateElementPath: ['channel', 'lastBuildDate']
+      */
+      updateElementPath: ['channel', 0, 'item', 0, 'title', 0] // Updated: 2016-12-29 14:00:00 +0000
+    },
+    {
       urls: ['https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv'],
       rss: 'https://github.com/zapret-info/z-i/commits/master.atom',
       /* RSS update date:
@@ -38,18 +50,6 @@ async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
       }
       */
       updateElementPath: ['entry', 0, 'title', 0], // Updated: 2016-12-29 14:00:00 +0000
-    },
-    {
-      urls: [
-        'http://sourceforge.net/p/z-i/code-0/HEAD/tree/dump.csv?format=raw',
-        'https://svn.code.sf.net/p/z-i/code-0/dump.csv'
-      ],
-      //rss: 'http://sourceforge.net/p/z-i/activity/feed?source=project_activity', // Still works.
-      rss: 'https://sourceforge.net/p/z-i/code-0/feed',
-      /* RSS update date:
-      updateElementPath: ['channel', 'lastBuildDate']
-      */
-      updateElementPath: ['channel', 0, 'item', 0, 'title', 0] // Updated: 2016-12-29 14:00:00 +0000
     },
     {
       urls: ['https://www.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw'],
