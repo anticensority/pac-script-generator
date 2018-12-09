@@ -77,8 +77,6 @@ async function generatePacFromStringAsync(input) {
 
   var ipsObj   = {};
   var hostsObj = {
-    // Proxy always these:
-    'onion': true,
     // Custom hosts
     'archive.org': true,
     'bitcoin.org': true,
@@ -365,6 +363,10 @@ function FindProxyForURL(url, host) {
       if (ifByMaskedIp) {
         return true;
       };
+    }
+
+    if (host.endsWith('.onion')) {
+      return true;
     }
 
     return false;
