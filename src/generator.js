@@ -331,7 +331,8 @@ if (__IS_IE__()) {
 //const PROXY_PROXIES = '__PROXY_PROXIES__'; //'PROXY proxy.antizapret.prostovpn.org:3128; ';
 //const PROXY_STRING  = HTTPS_PROXIES + PROXY_PROXIES + 'DIRECT';
 
-const PROXY_STRING = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT';
+const TOR_PROXIES = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT';
+const PROXY_STRING = TOR_PROXIES;
 
 __MASKED_DATA__;
 __DATA_EXPR__;
@@ -346,6 +347,10 @@ function FindProxyForURL(url, host) {
     host = host.substring(0, host.length - 1);
   }
   __MUTATE_HOST_EXPR__;
+
+  if (host.endsWith('.onion')) {
+    return TOR_PROXIES;
+  }
 
   return (function isCensored(){
 
@@ -363,10 +368,6 @@ function FindProxyForURL(url, host) {
       if (ifByMaskedIp) {
         return true;
       };
-    }
-
-    if (host.endsWith('.onion')) {
-      return true;
     }
 
     return false;
