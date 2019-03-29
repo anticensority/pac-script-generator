@@ -77,6 +77,8 @@ async function generatePacFromStringAsync(input) {
 
   var ipsObj   = {};
   var hostsObj = {
+    // Extremism:
+    'pravdabeslana.ru': true,
     // Custom hosts
     'archive.org': true,
     'bitcoin.org': true,
