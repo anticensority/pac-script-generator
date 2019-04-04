@@ -14,7 +14,19 @@ async function fetchIgnoredHostsAsync() {
   if ( res.ifOk ) {
     return { content: res.content.trim().split(/\s*\r?\n\s*/g), ifOk: true };
   }
-  return { error: new Error('Failed to fetch or get ignoredhosts. ResponseCode: ' + res.code), ifOk: false };
+  return { error: new Error('Failed to fetch or get ignoredhosts (by ValdikSS). ResponseCode: ' + res.code), ifOk: false };
+
+}
+
+async function fetchNonExistentDomainsAsync() {
+
+  var url = 'https://raw.githubusercontent.com/zapret-info/z-i/master/nxdomain.txt';
+  var res = await Utils.fetch(url);
+
+  if ( res.ifOk ) {
+    return { content: res.content.trim().split(/\s*\r?\n\s*/g), ifOk: true };
+  }
+  return { error: new Error('Failed to fetch or get ignoredhosts (NXDOMAIN). ResponseCode: ' + res.code), ifOk: false };
 
 }
 
@@ -96,23 +108,31 @@ async function generatePacFromStringAsync(input) {
     'rutor.info': true,
     'free-rutor.org': true,
     // Rutracker complaints:
-    "static.t-ru.org": true,
-    "rutrk.org": true,
+    'static.t-ru.org': true,
+    'rutrk.org': true,
 
-    "nnm-club.ws": true,
-    "lostfilm.tv": true,
-    "e-hentai.org": true,
-    "deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2M
+    'nnm-club.ws': true,
+    'lostfilm.tv': true,
+    'e-hentai.org': true,
+    'deviantart.net': true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2M
   };
   var ignoredHosts = {
-    'anticensority.tk': true,
+    //'pro100farma.net\\stanozolol\\': true,
   };
 
-  var res = await fetchIgnoredHostsAsync();
-  if (res.content) {
-    res.content.push('pro100farma.net\\stanozolol\\');
-    for(var i in res.content) {
-      var host = res.content[i];
+  {
+    var ignoredPromise = fetchIgnoredHostsAsync();
+    var nonexistentPromise = fetchNonExistentDomainsAsync();
+    var [ignoredRes, nonexistentRes] = await Promise.all([ignoredPromise, nonexistentPromise]);
+    if (!ignoredRes.ifOk) {
+      throw ignoredRes.error;
+    }
+    if (!nonexistentRes.ifOk) {
+      throw nonexistentRes.error;
+    }
+    var ignoredArr = [...ignoredRes.content, ...nonexistentRes.content];
+    for(var i in ignoredArr) {
+      var host = ignoredArr[i];
       ignoredHosts[host] = true;
     }
   }
@@ -220,8 +240,8 @@ async function generatePacFromStringAsync(input) {
     var newHosts  = values.shift().split( valuesSep )
       .filter((host) => host)
       .map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
-    var newUrls   = values.shift().split( valuesSep )
-      .filter((url) => url);
+    //var newUrls   = values.shift().split( valuesSep )
+    //  .filter((url) => url);
     // const ifDomainless = newHosts.length === 0 && newUrls.length === 0 || newIps.toString() === newHosts.toString();
     // if (ifDomainless) {
       newIps.forEach( function (ip)   {
