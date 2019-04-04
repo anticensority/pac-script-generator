@@ -1,16 +1,13 @@
 'use strict';
 
 const Assert = require('assert');
-const Airbrake = require('airbrake-js')
+Assert(process.env.ROLLBAR_TOKEN, 'Provide Rollbar token!');
 
-const AB_PROJECT_ID = process.env.AIRBRAKE_PROJECT_ID;
-const AB_API_KEY = process.env.AIRBRAKE_API_KEY;
-
-Assert(AB_PROJECT_ID && AB_API_KEY, 'Provide Airbrake credentials!');
-
-const airbrake = new Airbrake({
-  projectId: AB_PROJECT_ID,
-  projectKey: AB_API_KEY,
+const Rollbar = require('rollbar');
+const rollbar = new Rollbar({
+  accessToken: process.env.ROLLBAR_TOKEN,
+  captureUncaught: true,
+  captureUnhandledRejections: true,
 });
 
 const Publisher = require('./publisher');

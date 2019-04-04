@@ -72,11 +72,13 @@ module.exports.generatePacScriptAsync = async (sources) => {
 
 async function generatePacFromStringAsync(input) {
 
-  const typeToProxyString = await Proxies.getProxyStringAsync();
+  //const typeToProxyString = await Proxies.getProxyStringAsync();
   Logger.log('Generate pac from script...');
 
   var ipsObj   = {};
   var hostsObj = {
+    // Extremism:
+    'pravdabeslana.ru': true,
     // Custom hosts
     'archive.org': true,
     'bitcoin.org': true,
@@ -331,7 +333,8 @@ if (__IS_IE__()) {
 //const PROXY_PROXIES = '__PROXY_PROXIES__'; //'PROXY proxy.antizapret.prostovpn.org:3128; ';
 //const PROXY_STRING  = HTTPS_PROXIES + PROXY_PROXIES + 'DIRECT';
 
-const PROXY_STRING = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT';
+const TOR_PROXIES = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT';
+const PROXY_STRING = TOR_PROXIES;
 
 __MASKED_DATA__;
 __DATA_EXPR__;
@@ -346,6 +349,10 @@ function FindProxyForURL(url, host) {
     host = host.substring(0, host.length - 1);
   }
   __MUTATE_HOST_EXPR__;
+
+  if (host.endsWith('.onion')) {
+    return TOR_PROXIES;
+  }
 
   return (function isCensored(){
 
@@ -412,8 +419,8 @@ __END__;
     .replace('__REQUIRED_FUNS__;', requiredFunctions.join(';\n') + ';\n')
     .replace('__MUTATE_HOST_EXPR__;', '')
     .replace('__IS_IE__()', '/*@cc_on!@*/!1')
-    .replace('__HTTPS_PROXIES__', typeToProxyString.HTTPS || ';' )
-    .replace('__PROXY_PROXIES__', typeToProxyString.PROXY || ';' )
+    //.replace('__HTTPS_PROXIES__', typeToProxyString.HTTPS || ';' )
+    //.replace('__PROXY_PROXIES__', typeToProxyString.PROXY || ';' )
     .replace('__IS_CENSORED_BY_MASKED_IP_EXPR__', 'isCensoredByMaskedIp(ip)')
     .replace('__IS_CENSORED_BY_IP_EXPR__', Algo.generate.isCensoredByIpExpr() )
     .replace('__IS_CENSORED_BY_HOST_EXPR__', Algo.generate.isCensoredByHostExpr() );
