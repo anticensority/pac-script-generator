@@ -96,21 +96,23 @@ async function generatePacFromStringAsync(input) {
     'rutor.info': true,
     'free-rutor.org': true,
     // Rutracker complaints:
-    "static.t-ru.org": true,
-    "rutrk.org": true,
+    'static.t-ru.org': true,
+    'rutrk.org': true,
 
-    "nnm-club.ws": true,
-    "lostfilm.tv": true,
-    "e-hentai.org": true,
-    "deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2M
+    'nnm-club.ws': true,
+    'lostfilm.tv': true,
+    'e-hentai.org': true,
+    'deviantart.net': true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2M
   };
   var ignoredHosts = {
-    'anticensority.tk': true,
+    //'pro100farma.net\\stanozolol\\': true,
   };
 
   var res = await fetchIgnoredHostsAsync();
+  if (!res.ifOk) {
+    throw res.error;
+  }
   if (res.content) {
-    res.content.push('pro100farma.net\\stanozolol\\');
     for(var i in res.content) {
       var host = res.content[i];
       ignoredHosts[host] = true;
@@ -220,8 +222,8 @@ async function generatePacFromStringAsync(input) {
     var newHosts  = values.shift().split( valuesSep )
       .filter((host) => host)
       .map( function(h) { return Punycode.toASCII( h.replace(/\.+$/g, '').replace(/^\*\./g, '').replace(/^www\./g, '') ); } );
-    var newUrls   = values.shift().split( valuesSep )
-      .filter((url) => url);
+    //var newUrls   = values.shift().split( valuesSep )
+    //  .filter((url) => url);
     // const ifDomainless = newHosts.length === 0 && newUrls.length === 0 || newIps.toString() === newHosts.toString();
     // if (ifDomainless) {
       newIps.forEach( function (ip)   {
