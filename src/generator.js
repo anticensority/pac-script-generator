@@ -14,7 +14,19 @@ async function fetchIgnoredHostsAsync() {
   if ( res.ifOk ) {
     return { content: res.content.trim().split(/\s*\r?\n\s*/g), ifOk: true };
   }
-  return { error: new Error('Failed to fetch or get ignoredhosts. ResponseCode: ' + res.code), ifOk: false };
+  return { error: new Error('Failed to fetch or get ignoredhosts (by ValdikSS). ResponseCode: ' + res.code), ifOk: false };
+
+}
+
+async function fetchNonExistentDomainsAsync() {
+
+  var url = 'https://raw.githubusercontent.com/zapret-info/z-i/master/nxdomain.txt';
+  var res = await Utils.fetch(url);
+
+  if ( res.ifOk ) {
+    return { content: res.content.trim().split(/\s*\r?\n\s*/g), ifOk: true };
+  }
+  return { error: new Error('Failed to fetch or get ignoredhosts (NXDOMAIN). ResponseCode: ' + res.code), ifOk: false };
 
 }
 
@@ -108,13 +120,19 @@ async function generatePacFromStringAsync(input) {
     //'pro100farma.net\\stanozolol\\': true,
   };
 
-  var res = await fetchIgnoredHostsAsync();
-  if (!res.ifOk) {
-    throw res.error;
-  }
-  if (res.content) {
-    for(var i in res.content) {
-      var host = res.content[i];
+  {
+    var ignoredPromise = fetchIgnoredHostsAsync();
+    var nonexistentPromise = fetchNonExistentDomainsAsync();
+    var [ignoredRes, nonexistentRes] = await Promise.all([ignoredPromise, nonexistentPromise]);
+    if (!ignoredRes.ifOk) {
+      throw ignoredRes.error;
+    }
+    if (!nonexistentRes.ifOk) {
+      throw nonexistentRes.error;
+    }
+    var ignoredArr = [...ignoredRes.content, ...nonexistentRes.content];
+    for(var i in ignoredArr) {
+      var host = ignoredArr[i];
       ignoredHosts[host] = true;
     }
   }
