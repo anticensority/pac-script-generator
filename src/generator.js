@@ -370,7 +370,7 @@ function FindProxyForURL(url, host) {
   }
   __MUTATE_HOST_EXPR__;
 
-  if (dnsDomainIs(host, '.onion') {
+  if (dnsDomainIs(host, '.onion')) {
     return TOR_PROXIES;
   }
 
