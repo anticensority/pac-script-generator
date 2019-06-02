@@ -91,6 +91,8 @@ async function generatePacFromStringAsync(input) {
   var hostsObj = {
     // Extremism:
     'pravdabeslana.ru': true,
+    // WordPress:
+    'putinism.wordpress.com': true,
     // Custom hosts
     'archive.org': true,
     'bitcoin.org': true,
