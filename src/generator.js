@@ -93,6 +93,7 @@ async function generatePacFromStringAsync(input) {
     'pravdabeslana.ru': true,
     // WordPress:
     'putinism.wordpress.com': true,
+    '6090m01.wordpress.com': true,
     // Custom hosts
     'archive.org': true,
     'bitcoin.org': true,
