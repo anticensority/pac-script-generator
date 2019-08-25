@@ -12,11 +12,11 @@ module.exports = (function() {
   const TOKEN = process.env.GH_TOKEN;
   Assert(TOKEN, 'GH_TOKEN env variable is required, see sources.');
 
-  function checkIfError(response) {
+  async function checkIfErrorAsync(response) {
 
     const code = response.getResponseCode();
     if (!Utils.ifSuccessfulCode(code)) {
-      const err = new Error(code + ': ' + response.getContentText());
+      const err = new Error( code + ': ' + (await response.getContentTextAsync()) );
       err.code = code;
       return err;
     }
@@ -60,7 +60,7 @@ module.exports = (function() {
     Logger.log('Got token.');
 
     var response = await _request(token, 'GET', '/readme/');
-    err = checkIfError(response);
+    err = await checkIfErrorAsync(response);
     if (err) {
       return [err];
     }
@@ -84,7 +84,7 @@ module.exports = (function() {
       }
      );
 
-    err = checkIfError(response);
+    err = await checkIfErrorAsync(response);
     if (err) {
       return [err];
     }
@@ -107,7 +107,7 @@ module.exports = (function() {
     );
     Logger.log('POSTed to git/commits.');
 
-    err = checkIfError(response);
+    err = await checkIfErrorAsync(response);
     if (err) {
       return [err];
     }
@@ -135,7 +135,7 @@ module.exports = (function() {
     );
     Logger.log('PATCHed master.');
 
-    err = checkIfError(response);
+    err = await checkIfErrorAsync(response);
     if (err) {
       return [err];
     }

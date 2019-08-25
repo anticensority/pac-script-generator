@@ -65,7 +65,7 @@ async function ifShouldUpdateFromSourcesAsync(lastFetchDate) {
       if ( provider.rss && provider.updateElementPath ) {
         var res = await Utils.fetch(provider.rss);
         if ( res.ifOk ) {
-          var xml = res.content;
+          var xml = await res.getContentTextAsync();
           var [err, document] = await new Promise((resolve) => Xml2Js.parseString(
             xml,
             {
@@ -123,7 +123,9 @@ async function updatePacScriptAsync(ifForced) {
   let lastFetchDate = undefined;
   if (!ifForced) {
     const res =  await Utils.fetch(`${REPO_URL}/commits`);
-    lastFetchDate = JSON.parse(res.content)[0].commit.message.replace(/^Updated: /, '');
+    lastFetchDate = JSON.parse(
+      await res.getContentTextAsync(),
+    )[0].commit.message.replace(/^Updated: /, '');
   }
 
   const sources = await ifShouldUpdateFromSourcesAsync(lastFetchDate);

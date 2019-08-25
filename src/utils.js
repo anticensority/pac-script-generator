@@ -18,18 +18,12 @@ Utils.fetch = async function UtilsFetch(url, encoding) {
 
   const res = await Fetch(url);
   const code = res.status;
-  const text = await res.text();
   const result = {
-    response: {
-      getResponseCode: () => code,
-      getContentText: () => text,
-    },
-    code,
     ifOk: Utils.ifSuccessfulCode(code),
+    code,
+    stream: res.body,
+    getContentTextAsync: async () => await res.text(),
   };
-  if( result.ifOk ) {
-    result.content = text;
-  }
   return result;
 
 };

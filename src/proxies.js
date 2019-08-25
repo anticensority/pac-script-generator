@@ -38,7 +38,7 @@ module.exports = (function() {
       var res = await Utils.fetch('https://dns.google.com/resolve?type=' + type + '&name=' + host);
       var data = '';
       if (res.ifOk) {
-        var json = res.content;
+        var json = await res.getContentTextAsync();
         data = JSON.parse(json);
       }
       if (!res.ifOk || data.Status || !data.Answer) {
@@ -77,12 +77,12 @@ module.exports = (function() {
     TYPE_TO_PROXIES.PROXY.forEach( async function(proxy) {
 
       proxyStr += 'PROXY ' + proxy.host + ':' + proxy.port + '; ';
-      var res = await getIpsForAsync(proxy.host);
-      if (!res.ifOk) {
+      var result = await getIpsForAsync(proxy.host);
+      if (!result.ifOk) {
         Logger.log('Failed to get ips for: ' + proxy.host);
         return;
       }
-      proxy.ips = res.content;
+      proxy.ips = await result.content();
       ipStr += proxy.ips[1].concat(proxy.ips[28]).map( function(ip) { return 'PROXY ' + ip + ':' + proxy.port; } ).join('; ') + '; ';
 
     });
