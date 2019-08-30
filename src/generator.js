@@ -233,7 +233,7 @@ async function generatePacFromStreamAsync(inputStream) {
     await new Promise((resolve) => {
 
       inputStream
-        .pipe(Split2())
+        .pipe(Split2('\n'))
         .on('finish', resolve)
         .on('data', (line) => {
 
