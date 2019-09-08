@@ -303,6 +303,7 @@ async function generatePacFromStreamAsync(inputStream) {
       hostsObj = treeToObj();
 
     } // Release tree.
+    gc();
 
     [
       '104.18.52.38',
