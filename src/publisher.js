@@ -135,6 +135,7 @@ async function updatePacScriptAsync(ifForced) {
   }
 
   var result = await Generator.generatePacScriptAsync(sources);
+  gc(); // Release allocator's resrources.
   if (result.error) {
     throw result.error;
   }
