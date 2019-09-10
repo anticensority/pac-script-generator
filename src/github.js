@@ -28,7 +28,7 @@ module.exports = (function() {
   async function uploadToGitHubAsync(repoUrl, data, dateStr) {
 
     gc(); // Collect before positng a large blob.
-    async function _request(token, method, path, data) {
+    async function _request(token, method, path, reqData) {
 
       const config = {
         method,
@@ -38,9 +38,9 @@ module.exports = (function() {
           Authorization: 'Bearer ' + token,
         },
       };
-      if (data) {
+      if (reqData) {
         Object.assign(config, {
-          body: JSON.stringify(data),
+          body: JSON.stringify(reqData),
         });
       }
 
