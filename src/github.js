@@ -27,6 +27,7 @@ module.exports = (function() {
 
   async function uploadToGitHubAsync(repoUrl, data, dateStr) {
 
+    gc(); // Collect before positng a large blob.
     async function _request(token, method, path, data) {
 
       const config = {
