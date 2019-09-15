@@ -407,6 +407,11 @@ function FindProxyForURL(url, host) {
   if (host[host.length - 1] === '.') {
     host = host.substring(0, host.length - 1);
   }
+  if (host[0] === '.') {
+    // Yes, it's possible, e.g. `fetch(https://.google.com)`.
+    // `fetch(https://.)` should fail though.
+    host = host.substring(1);
+  }  
   __MUTATE_HOST_EXPR__;
 
   if (dnsDomainIs(host, '.onion')) {
