@@ -1,7 +1,7 @@
 package main
 
 import (
-    "encoding/csv"
+	"encoding/csv"
 	"fmt"
 	"net/http"
 	"io"
@@ -10,6 +10,9 @@ import (
 	"strings"
 	"sort"
 	"runtime"
+	"strconv"
+	"io/ioutil"
+	"regexp"
 
 	"text/template"
 	"encoding/json"
@@ -23,43 +26,110 @@ import (
 	"golang.org/x/net/idna"
 )
 
-// line() reports the byte offset of the beginning of the Nth line in a file.
-//func getALine(in io.Reader) (string, error) {
+type blockProvider struct {
+	urls []string
+	rssUrl string
+}
 
-//	var offset int64
-//	var builder strings.Builder
-//	nlines := 1
+var blockProviders = []blockProvider{
+	blockProvider {
+		urls: []string{
+			"https://sourceforge.net/p/z-i/code-0/HEAD/tree/dump.csv?format=raw",
+			"https://svn.code.sf.net/p/z-i/code-0/dump.csv",
+		},
+		rssUrl: "https://sourceforge.net/p/z-i/code-0/feed",
+	},
+	blockProvider {
+		urls: []string{
+			"https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv",
+		},
+		rssUrl: "https://github.com/zapret-info/z-i/commits/master.atom",
+	},
+	blockProvider {
+		urls: []string{
+			"https://www.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw",
+		},
+		rssUrl: "https://app.assembla.com/spaces/z-i/stream.rss",
+	},
+}
 
-//	line := 0
-//	for buf := make([]byte, 1); ; {
-//		if line == nlines {
-//			break
-//		}
-//		nbytes, err := in.Read(buf)
-//		if err != nil {
-//			return "", err
-//		}
-//		offset += int64(nbytes)
+var get = func (url string) (*http.Response, error) {
 
-//		if buf[0] == '\n' {
-//			line++
-//		} else {
-//			builder.Write(buf)
-//		}
-//	}
-//	if line != nlines {
-//		return "", fmt.Errorf("could not find target line")
-//	}
-//	in.Seek(offset, 0)
-//	return builder.String(), nil
-//}
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != http.StatusOK {
+		return response, fmt.Errorf("Negative status code: " + strconv.Itoa(response.StatusCode))
+	}
+	return response, nil
+}
+var getOrDie = func (url string) *http.Response {
+
+	response, err := get(url)
+	if err != nil {
+		panic(err)
+	}
+	return response
+}
+
+type GhCommits []struct{
+	Commit struct{
+		Message string
+	}
+}
 
 func main() {
 
-	response, err := http.Get("https://bitbucket.org/ValdikSS/antizapret/raw/master/ignorehosts.txt")
-	if err != nil || response.StatusCode != http.StatusOK {
+	GH_REPO := os.Getenv("GH_REPO")
+	GH_TOKEN := os.Getenv("GH_TOKEN")
+	if GH_REPO == "" || GH_TOKEN == "" {
+		panic("Provide GH_REPO and GH_TOKEN environment variables!")
+	}
+	REPO_URL := "https://api.github.com/repos/" + GH_REPO
+	response := getOrDie(REPO_URL + "/commits")
+	text, err := ioutil.ReadAll(response.Body)
+	if err != nil {
 		panic(err)
 	}
+	response.Body.Close()
+	commits := &GhCommits{}
+	json.Unmarshal(text, commits)
+	lastUpdateMessage := (*commits)[0].Commit.Message
+	var newUpdateMessage string
+
+	updatedRegexp := regexp.MustCompile(`Updated: \d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d [+-]0000`)
+
+	var bestProvider *blockProvider = nil
+	for _, provider := range blockProviders {
+		response := getOrDie(provider.rssUrl)
+		scanner := bufio.NewScanner(response.Body)
+		for scanner.Scan() {
+			match := updatedRegexp.FindString(scanner.Text())
+			if match != "" {
+				if lastUpdateMessage < match {
+					newUpdateMessage = match
+					bestProvider = &provider
+					break
+				}
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			panic(err)
+		}
+		response.Body.Close()
+		if bestProvider != nil {
+			break
+		}
+	}
+	if bestProvider == nil {
+		fmt.Println("No newer dump.csv published yet!")
+		os.Exit(0)
+	}
+	urls := bestProvider.urls
+	fmt.Println("Best provider urls are:", urls)
+
+	response = getOrDie("https://bitbucket.org/ValdikSS/antizapret/raw/master/ignorehosts.txt")
 	fmt.Println("Downloaded ingoredhosts.")
 
 	ignoredHostnames := make(map[string]bool)
@@ -70,16 +140,7 @@ func main() {
 	response.Body.Close()
 	fmt.Println("Parsed ingoredhosts.txt.")
 
-	//nxdomain, err := os.Open("./nxdomain.txt")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer nxdomain.Close()
-
-	response, err = http.Get("https://raw.githubusercontent.com/zapret-info/z-i/master/nxdomain.txt")
-	if err != nil || response.StatusCode != http.StatusOK {
-		panic(err)
-	}
+	response = getOrDie("https://raw.githubusercontent.com/zapret-info/z-i/master/nxdomain.txt")
 	fmt.Println("Downloaded nxdomians.")
 
 	nxdomains := make(map[string]bool)
@@ -94,25 +155,25 @@ func main() {
 	response.Body.Close()
 	fmt.Println("Parsed nxdomians.")
 
-	response, err = http.Get("https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv")
-	if err != nil || response.StatusCode != http.StatusOK {
-		panic(err)
+	var lastError error
+	for _, url := range urls {
+		response, err = get(url)
+		if err == nil {
+			break
+		}
+		lastError = err
+		response = nil
+	}
+	if response == nil {
+		panic(lastError)
 	}
 	csvIn := bufio.NewReader(response.Body)
 	fmt.Println("Downloaded csv.")
 
-	//file, err := os.Open("./dump.csv")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer file.Close()
-
-	//line, err := getALine(csvIn)
 	line, err := csvIn.ReadString('\n')
 	if err != nil {
 	  panic(err)
 	}
-    fmt.Println(line)
 
 	reader := csv.NewReader(transform.NewReader(csvIn, charmap.Windows1251.NewDecoder()))
 	reader.Comma = ';'
@@ -225,6 +286,7 @@ func main() {
 	ipv4subnets = nil
 	hostnames = nil
 	runtime.GC()
+	fmt.Println("Opening template...")
 
 	tmpl, err := template.ParseFiles("./template.js")
 	if err != nil {
@@ -243,8 +305,31 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = tmpl.ExecuteTemplate(os.Stdout, "template.js", struct { INPUTS string }{ INPUTS: string(result) })
+
+	//builder := new(strings.Builder)
+	out, in := io.Pipe()
+	defer in.Close()
+	defer out.Close()
+	fmt.Fprintln(in, "// " + newUpdateMessage)
+
+	fmt.Println("Rendering template...")
+	err = tmpl.ExecuteTemplate(in, "template.js", struct { INPUTS string }{ INPUTS: string(result) })
 	if err != nil {
 		panic(err)
 	}
+
+	os.Exit(0)
+	req, err := http.NewRequest("POST", REPO_URL + "/contents/anticensority.pac", out)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer " + GH_TOKEN)
+	response, err = http.DefaultClient.Do(req)
+	defer response.Body.Close()
+	if err != nil {
+		panic(err)
+	}
+	
 }
