@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"regexp"
+	"flag"
 
 	"text/template"
 	"encoding/json"
@@ -25,6 +26,8 @@ import (
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/net/idna"
 )
+
+var ifForced = flag.Bool("force", false, "If to ignore checking of an updated dump.csv available")
 
 type blockProvider struct {
 	urls []string
@@ -73,10 +76,12 @@ var getOrDie = func (url string) *http.Response {
 	return response
 }
 
+type GhCommit struct{
+	Message string `json:"message,omitempty"`
+	Tree string `json:"tree,omitempty"`
+}
 type GhCommits []struct{
-	Commit struct{
-		Message string
-	}
+	Commit GhCommit
 }
 
 func main() {
@@ -87,15 +92,25 @@ func main() {
 		panic("Provide GH_REPO and GH_TOKEN environment variables!")
 	}
 	REPO_URL := "https://api.github.com/repos/" + GH_REPO
-	response := getOrDie(REPO_URL + "/commits")
-	text, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		panic(err)
+	var (
+		text []byte
+		response *http.Response
+		err error
+	)
+	lastUpdateMessage := ""
+	flag.Parse()
+	if *ifForced == false {
+
+		response := getOrDie(REPO_URL + "/commits")
+		text, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			panic(err)
+		}
+		response.Body.Close()
+		commits := &GhCommits{}
+		json.Unmarshal(text, commits)
+		lastUpdateMessage = (*commits)[0].Commit.Message
 	}
-	response.Body.Close()
-	commits := &GhCommits{}
-	json.Unmarshal(text, commits)
-	lastUpdateMessage := (*commits)[0].Commit.Message
 	var newUpdateMessage string
 
 	updatedRegexp := regexp.MustCompile(`Updated: \d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d [+-]0000`)
@@ -170,7 +185,7 @@ func main() {
 	csvIn := bufio.NewReader(response.Body)
 	fmt.Println("Downloaded csv.")
 
-	line, err := csvIn.ReadString('\n')
+	_, err = csvIn.ReadString('\n')
 	if err != nil {
 	  panic(err)
 	}
@@ -179,7 +194,37 @@ func main() {
 	reader.Comma = ';'
 	reader.FieldsPerRecord = 6
 	idna := idna.New()
-	hostnames   := make(map[string]bool)
+	hostnames   := map[string]bool{
+		// Extremism:
+		"pravdabeslana.ru": true,
+		// WordPress:
+		"putinism.wordpress.com": true,
+		"6090m01.wordpress.com": true,
+		// Custom hosts
+		"archive.org": true,
+		"bitcoin.org": true,
+		// LinkedIn
+		"licdn.com": true,
+		"linkedin.com": true,
+		// Based on users complaints:
+		"koshara.net": true,
+		"koshara.co": true,
+		"new-team.org": true,
+		"fast-torrent.ru": true,
+		"pornreactor.cc": true,
+		"joyreactor.cc": true,
+		"nnm-club.name": true,
+		"rutor.info": true,
+		"free-rutor.org": true,
+		// Rutracker complaints:
+		"static.t-ru.org": true,
+		"rutrk.org": true,
+
+		"nnm-club.ws": true,
+		"lostfilm.tv": true,
+		"e-hentai.org": true,
+		"deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2
+	}
 	ipv4        := make(map[string]bool)
 	ipv4subnets := make(map[string]bool)
 	ipv6        := make(map[string]bool)
@@ -301,35 +346,138 @@ func main() {
 		HOSTNAMES: hostnamesMap,
 		MASKED_SUBNETS: ipv4subnetsKeys,
 	}
-	result, err := json.Marshal(values)
+	marshalled, err := json.Marshal(values)
 	if err != nil {
 		panic(err)
 	}
 
-	//builder := new(strings.Builder)
-	out, in := io.Pipe()
-	defer in.Close()
-	defer out.Close()
-	fmt.Fprintln(in, "// " + newUpdateMessage)
+	builder := new(strings.Builder)
+	//out, in := io.Pipe()
+	//defer in.Close()
+	//defer out.Close()
 
+	fmt.Fprintln(builder, "// " + newUpdateMessage)
 	fmt.Println("Rendering template...")
-	err = tmpl.ExecuteTemplate(in, "template.js", struct { INPUTS string }{ INPUTS: string(result) })
+	err = tmpl.ExecuteTemplate(builder, "template.js", struct { INPUTS string }{ INPUTS: string(marshalled) })
 	if err != nil {
 		panic(err)
+	}
+	marshalled = nil
+	values = nil
+	ipv4Map = nil
+	hostnamesMap = nil
+	ipv4subnetsKeys = nil
+	runtime.GC()
+
+	fmt.Println("Getting README...")
+	response = getOrDie(REPO_URL + "/readme/")
+	text, err = ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	response.Body.Close()
+	readme := &struct{
+		Sha string
+		Path string
+	}{}
+	json.Unmarshal(text, readme)
+
+	type gitFile struct {
+		Path string `json:"path"`
+		Mode string `json:"mode"`
+		Type string `json:"type"`
+		Content string `json:"content,omitempty"`
+		Sha string `json:"sha,omitempty"`
 	}
 
-	os.Exit(0)
-	req, err := http.NewRequest("POST", REPO_URL + "/contents/anticensority.pac", out)
+	body := &struct{
+		Tree []gitFile `json:"tree"`
+	}{
+		Tree: make([]gitFile, 2),
+	}
+	body.Tree[0] = gitFile{
+		Path: "anticensority.pac",
+		Mode: "100644",
+		Type: "blob",
+		Content: builder.String(),
+	}
+	body.Tree[1] = gitFile{
+		Path: readme.Path,
+		Mode: "100644",
+		Type: "blob",
+		Sha: readme.Sha,
+	}
+	marshalled, err = json.Marshal(body)
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer " + GH_TOKEN)
-	response, err = http.DefaultClient.Do(req)
-	defer response.Body.Close()
+	builder = nil
+	body = nil
+	readme = nil
+	runtime.GC()
+
+
+	doOrDie := func(method, url string, payload []byte) *http.Response {
+
+		fmt.Println(method + "ing to", url)
+		req, err := http.NewRequest(method, url, bytes.NewReader(payload))
+		if err != nil {
+			panic(err)
+		}
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer " + GH_TOKEN)
+		response, err = http.DefaultClient.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		if response.StatusCode < 200 || response.StatusCode >= 300 {
+			fmt.Println("Negative status code: " + strconv.Itoa(response.StatusCode))
+			fmt.Println(response.Body)
+			panic(method + " failed.")
+		}
+		fmt.Println(method + "ed.")
+		return response
+	}
+	response = doOrDie("POST", REPO_URL + "/git/trees", marshalled)
+	text, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		panic(err)
 	}
-	
+	response.Body.Close()
+	tree := &struct{
+		Sha string
+	}{}
+	json.Unmarshal(text, tree)
+	marshalled = nil
+	response = nil
+	runtime.GC()
+
+	commit := &GhCommit{
+		Message: newUpdateMessage,
+		Tree: tree.Sha,
+	}
+	marshalled, err = json.Marshal(commit)
+	if err != nil {
+		panic(err)
+	}
+	response = doOrDie("POST", REPO_URL + "/git/commits", marshalled)
+	text, err = ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	response.Body.Close()
+	patch := &struct{
+		Sha string `json:"sha"`
+		Force bool `json:"force,omitempty"`
+	}{}
+	json.Unmarshal(text, patch)
+	patch.Force = true
+	marshalled, err = json.Marshal(patch)
+	if err != nil {
+		panic(err)
+	}
+	response = doOrDie("PATCH", REPO_URL + "/git/refs/heads/master", marshalled)
+	response.Body.Close()
+	fmt.Println("Done.")
 }

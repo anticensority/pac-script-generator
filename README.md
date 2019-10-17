@@ -11,7 +11,7 @@ Script to run on a server to generate anticensority PAC-script.
 
 1. First, explicitly select a repo branch "production" (so it appears in the tab address bar).
 2. In new tab: [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-3. Deploy app > Manage App > Resources tab > Heroku Scheduler > Add new job > input "npm run generate" after $ > Save.
+3. Deploy app > Manage App > Resources tab > Heroku Scheduler > Add new job > input "go run main.go" after $ > Save.
 
 ## For Anticensority Team Developers
 
@@ -21,4 +21,4 @@ Script to run on a server to generate anticensority PAC-script.
 
 5. I strongly recommend configuring some error monitoring addon for Heroku.
    Unfortunately I can't advise any due to lack of long-term experience, you
-   may try Airbrake (requires source modification), Papertail (try "npm ERR" search phrase).
+   may try https://logentries.com.

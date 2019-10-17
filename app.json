@@ -7,7 +7,7 @@
     "anticensority"
   ],
   "logo": "https://avatars2.githubusercontent.com/u/19631280",
-  "repository": "https://github.com/anticensority/pac-script-generator",
+  "repository": "https://github.com/anticensority/pac-script-generator/tree/golang",
   "website": "https://github.com/anticensority/pac-script-generator",
   "env": {
     "GH_REPO": {
@@ -27,7 +27,6 @@
       }
     }
   },
-  "image": "heroku/nodejs",
   "addons": [
     "scheduler:standard"
   ],
