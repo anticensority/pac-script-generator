@@ -117,7 +117,11 @@ func main() {
 
 	var bestProvider *blockProvider = nil
 	for _, provider := range blockProviders {
-		response := getOrDie(provider.rssUrl)
+		response, err := get(provider.rssUrl)
+		if err != nil {
+			fmt.Println("Skipping provider becuse of:", err)
+			continue
+		}
 		scanner := bufio.NewScanner(response.Body)
 		for scanner.Scan() {
 			match := updatedRegexp.FindString(scanner.Text())
