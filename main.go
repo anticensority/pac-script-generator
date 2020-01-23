@@ -48,12 +48,12 @@ var blockProviders = []blockProvider{
 		},
 		rssUrl: "https://github.com/zapret-info/z-i/commits/master.atom",
 	},
-	blockProvider {
-		urls: []string{
-			"https://www.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw",
-		},
-		rssUrl: "https://app.assembla.com/spaces/z-i/stream.rss",
-	},
+	//blockProvider {
+	//	urls: []string{
+	//		"https://www.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw",
+	//	},
+	//	rssUrl: "https://app.assembla.com/spaces/z-i/stream.rss",
+	//},
 }
 
 var get = func (url string) (*http.Response, error) {
