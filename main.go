@@ -58,7 +58,9 @@ var blockProviders = []blockProvider{
 
 var get = func (url string) (*http.Response, error) {
 
+	fmt.Println("GETting " + url)
 	response, err := http.Get(url)
+    fmt.Println("Got")
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +121,7 @@ func main() {
 	for _, provider := range blockProviders {
 		response, err := get(provider.rssUrl)
 		if err != nil {
-			fmt.Println("Skipping provider becuse of:", err)
+			fmt.Println("Skipping provider because of:", err)
 			continue
 		}
 		scanner := bufio.NewScanner(response.Body)
