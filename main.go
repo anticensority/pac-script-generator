@@ -63,7 +63,7 @@ var get = func (url string) (*http.Response, error) {
 		return nil, err
 	}
 	if response.StatusCode != http.StatusOK {
-		return response, fmt.Errorf("Negative status code: " + strconv.Itoa(response.StatusCode))
+		return response, fmt.Errorf("Negative status code: " + strconv.Itoa(response.StatusCode) + ". For url: " + url)
 	}
 	return response, nil
 }
@@ -436,7 +436,7 @@ func main() {
 			panic(err)
 		}
 		if response.StatusCode < 200 || response.StatusCode >= 300 {
-			fmt.Println("Negative status code: " + strconv.Itoa(response.StatusCode))
+			fmt.Println("Negative status code: " + strconv.Itoa(response.StatusCode) + ". For url: " + url)
 			fmt.Println(response.Body)
 			panic(method + " failed.")
 		}
