@@ -230,6 +230,7 @@ func main() {
 		"lostfilm.tv": true,
 		"e-hentai.org": true,
 		"deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2
+		"kaztorka.org": true, // https://groups.google.com/forum/#!msg/anticensority/vweNToREQ1o/3EbhCDjfAgAJ
 	}
 	ipv4        := make(map[string]bool)
 	ipv4subnets := make(map[string]bool)
