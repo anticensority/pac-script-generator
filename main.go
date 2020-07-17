@@ -60,7 +60,7 @@ var get = func (url string) (*http.Response, error) {
 
 	fmt.Println("GETting " + url)
 	response, err := http.Get(url)
-    fmt.Println("Got")
+	fmt.Println("Got")
 	if err != nil {
 		return nil, err
 	}
