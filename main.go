@@ -37,10 +37,9 @@ type blockProvider struct {
 var blockProviders = []blockProvider{
 	blockProvider {
 		urls: []string{
-			"https://sourceforge.net/p/z-i/code-0/HEAD/tree/dump.csv?format=raw",
-			"https://svn.code.sf.net/p/z-i/code-0/dump.csv",
+			"https://svn.code.sf.net/p/zapret-info/code/dump.csv",
 		},
-		rssUrl: "https://sourceforge.net/p/z-i/code-0/feed",
+		rssUrl: "https://sourceforge.net/p/zapret-info/code/feed",
 	},
 	blockProvider {
 		urls: []string{
@@ -50,7 +49,7 @@ var blockProviders = []blockProvider{
 	},
 	//blockProvider {
 	//	urls: []string{
-	//		"https://www.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw",
+	//		"https://app.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw",
 	//	},
 	//	rssUrl: "https://app.assembla.com/spaces/z-i/stream.rss",
 	//},
