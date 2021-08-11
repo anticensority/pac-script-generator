@@ -1,47 +1,47 @@
 package main
 
 import (
-	"encoding/csv"
-	"fmt"
-	"net/http"
-	"io"
 	"bufio"
-	"os"
-	"strings"
-	"sort"
-	"runtime"
-	"strconv"
-	"io/ioutil"
-	"regexp"
+	"encoding/csv"
 	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"runtime"
+	"sort"
+	"strconv"
+	"strings"
 
-	"text/template"
 	"encoding/json"
+	"text/template"
 
-	"net"
 	"bytes"
 	"encoding/binary"
+	"net"
 
-	"golang.org/x/text/transform"
-	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/net/idna"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
 var ifForced = flag.Bool("force", false, "If to ignore checking of an updated dump.csv available")
 
 type blockProvider struct {
-	urls []string
+	urls   []string
 	rssUrl string
 }
 
 var blockProviders = []blockProvider{
-	blockProvider {
+	blockProvider{
 		urls: []string{
 			"https://svn.code.sf.net/p/zapret-info/code/dump.csv",
 		},
 		rssUrl: "https://sourceforge.net/p/zapret-info/code/feed",
 	},
-	blockProvider {
+	blockProvider{
 		urls: []string{
 			"https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv",
 		},
@@ -55,7 +55,7 @@ var blockProviders = []blockProvider{
 	//},
 }
 
-var get = func (url string) (*http.Response, error) {
+var get = func(url string) (*http.Response, error) {
 
 	fmt.Println("GETting " + url)
 	response, err := http.Get(url)
@@ -68,7 +68,7 @@ var get = func (url string) (*http.Response, error) {
 	}
 	return response, nil
 }
-var getOrDie = func (url string) *http.Response {
+var getOrDie = func(url string) *http.Response {
 
 	response, err := get(url)
 	if err != nil {
@@ -77,11 +77,11 @@ var getOrDie = func (url string) *http.Response {
 	return response
 }
 
-type GhCommit struct{
+type GhCommit struct {
 	Message string `json:"message,omitempty"`
-	Tree string `json:"tree,omitempty"`
+	Tree    string `json:"tree,omitempty"`
 }
-type GhCommits []struct{
+type GhCommits []struct {
 	Commit GhCommit
 }
 
@@ -94,9 +94,9 @@ func main() {
 	}
 	REPO_URL := "https://api.github.com/repos/" + GH_REPO
 	var (
-		text []byte
+		text     []byte
 		response *http.Response
-		err error
+		err      error
 	)
 	lastUpdateMessage := ""
 	flag.Parse()
@@ -192,48 +192,49 @@ func main() {
 
 	_, err = csvIn.ReadString('\n')
 	if err != nil {
-	  panic(err)
+		panic(err)
 	}
 
 	reader := csv.NewReader(transform.NewReader(csvIn, charmap.Windows1251.NewDecoder()))
 	reader.Comma = ';'
 	reader.FieldsPerRecord = 6
 	idna := idna.New()
-	hostnames   := map[string]bool{
+	hostnames := map[string]bool{
 		// Extremism:
 		"pravdabeslana.ru": true,
 		// WordPress:
 		"putinism.wordpress.com": true,
-		"6090m01.wordpress.com": true,
+		"6090m01.wordpress.com":  true,
 		// Custom hosts
 		"archive.org": true,
 		"bitcoin.org": true,
 		// LinkedIn
-		"licdn.com": true,
+		"licdn.com":    true,
 		"linkedin.com": true,
 		// Based on users complaints:
-		"koshara.net": true,
-		"koshara.co": true,
-		"new-team.org": true,
+		"koshara.net":     true,
+		"koshara.co":      true,
+		"new-team.org":    true,
 		"fast-torrent.ru": true,
-		"pornreactor.cc": true,
-		"joyreactor.cc": true,
-		"nnm-club.name": true,
-		"rutor.info": true,
-		"free-rutor.org": true,
+		"pornreactor.cc":  true,
+		"joyreactor.cc":   true,
+		"nnm-club.name":   true,
+		"rutor.info":      true,
+		"free-rutor.org":  true,
 		// Rutracker complaints:
 		"static.t-ru.org": true,
-		"rutrk.org": true,
+		"rutrk.org":       true,
 
-		"nnm-club.ws": true,
-		"lostfilm.tv": true,
-		"e-hentai.org": true,
+		"nnm-club.ws":    true,
+		"lostfilm.tv":    true,
+		"e-hentai.org":   true,
 		"deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2
-		"kaztorka.org": true, // https://groups.google.com/forum/#!msg/anticensority/vweNToREQ1o/3EbhCDjfAgAJ
+		"kaztorka.org":   true, // https://groups.google.com/forum/#!msg/anticensority/vweNToREQ1o/3EbhCDjfAgAJ
 	}
-	ipv4        := make(map[string]bool)
+	ipv4 := make(map[string]bool)
 	ipv4subnets := make(map[string]bool)
-	ipv6        := make(map[string]bool)
+	ipv6 := make(map[string]bool)
+
 	for {
 		record, err := reader.Read()
 		if err != nil {
@@ -242,21 +243,7 @@ func main() {
 			}
 			panic(err)
 		}
-		ips := strings.Split(record[0], " | ")
-		for _, ip := range ips {
-			ip = strings.Trim(ip, " \t")
-			ifIpV6 := strings.ContainsAny(ip, ":")
-			if ifIpV6 {
-				ipv6[ip] = true
-				continue
-			}
-			ifSubnet := strings.ContainsAny(ip, "/")
-			if ifSubnet {
-				ipv4subnets[ip] = true
-				continue
-			}
-			ipv4[ip] = true
-		}
+		ifHasHostname := false
 		hostnamesSlice := strings.Split(record[1], " | ")
 		for _, hostname := range hostnamesSlice {
 			hostname = strings.Trim(hostname, " \t")
@@ -275,6 +262,24 @@ func main() {
 					hostname = hostname[4:]
 				}
 				hostnames[hostname] = true
+				ifHasHostname = true
+			}
+		}
+		if !ifHasHostname {
+			ips := strings.Split(record[0], " | ")
+			for _, ip := range ips {
+				ip = strings.Trim(ip, " \t")
+				ifIpV6 := strings.ContainsAny(ip, ":")
+				if ifIpV6 {
+					ipv6[ip] = true
+					continue
+				}
+				ifSubnet := strings.ContainsAny(ip, "/")
+				if ifSubnet {
+					ipv4subnets[ip] = true
+					continue
+				}
+				ipv4[ip] = true
 			}
 		}
 	}
@@ -284,7 +289,7 @@ func main() {
 	runtime.GC()
 
 	// Converts IP mask to 16 bit unsigned integer.
-	addrToInt := func (in []byte) int {
+	addrToInt := func(in []byte) int {
 
 		//var i uint16
 		var i int32
@@ -295,7 +300,7 @@ func main() {
 		}
 		return int(i)
 	}
-	getSubnets := func (m map[string]bool) [][]int {
+	getSubnets := func(m map[string]bool) [][]int {
 
 		keys := make([][]int, len(m))
 		i := 0
@@ -304,18 +309,18 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			keys[i] = []int{ addrToInt([]byte(mask.IP)), addrToInt([]byte(mask.Mask)) }
+			keys[i] = []int{addrToInt([]byte(mask.IP)), addrToInt([]byte(mask.Mask))}
 			i++
 		}
 		return keys
 	}
-	getOptimizedMap := func (m map[string]bool) map[int]string {
+	getOptimizedMap := func(m map[string]bool) map[int]string {
 
 		opt := make(map[int][]string)
 		for key := range m {
 			length := len(key)
 			if opt[length] == nil {
-				opt[length] = []string{ key }
+				opt[length] = []string{key}
 				continue
 			}
 			opt[length] = append(opt[length], key)
@@ -344,12 +349,12 @@ func main() {
 		panic(err)
 	}
 	values := &struct {
-		IPS map[int]string
-		HOSTNAMES map[int]string
+		IPS            map[int]string
+		HOSTNAMES      map[int]string
 		MASKED_SUBNETS [][]int
 	}{
-		IPS: ipv4Map,
-		HOSTNAMES: hostnamesMap,
+		IPS:            ipv4Map,
+		HOSTNAMES:      hostnamesMap,
 		MASKED_SUBNETS: ipv4subnetsKeys,
 	}
 	marshalled, err := json.Marshal(values)
@@ -362,9 +367,9 @@ func main() {
 	//defer in.Close()
 	//defer out.Close()
 
-	fmt.Fprintln(builder, "// " + newUpdateMessage)
+	fmt.Fprintln(builder, "// "+newUpdateMessage)
 	fmt.Println("Rendering template...")
-	err = tmpl.ExecuteTemplate(builder, "template.js", struct { INPUTS string }{ INPUTS: string(marshalled) })
+	err = tmpl.ExecuteTemplate(builder, "template.js", struct{ INPUTS string }{INPUTS: string(marshalled)})
 	if err != nil {
 		panic(err)
 	}
@@ -382,36 +387,36 @@ func main() {
 		panic(err)
 	}
 	response.Body.Close()
-	readme := &struct{
-		Sha string
+	readme := &struct {
+		Sha  string
 		Path string
 	}{}
 	json.Unmarshal(text, readme)
 
 	type gitFile struct {
-		Path string `json:"path"`
-		Mode string `json:"mode"`
-		Type string `json:"type"`
+		Path    string `json:"path"`
+		Mode    string `json:"mode"`
+		Type    string `json:"type"`
 		Content string `json:"content,omitempty"`
-		Sha string `json:"sha,omitempty"`
+		Sha     string `json:"sha,omitempty"`
 	}
 
-	body := &struct{
+	body := &struct {
 		Tree []gitFile `json:"tree"`
 	}{
 		Tree: make([]gitFile, 2),
 	}
 	body.Tree[0] = gitFile{
-		Path: "anticensority.pac",
-		Mode: "100644",
-		Type: "blob",
+		Path:    "anticensority.pac",
+		Mode:    "100644",
+		Type:    "blob",
 		Content: builder.String(),
 	}
 	body.Tree[1] = gitFile{
 		Path: readme.Path,
 		Mode: "100644",
 		Type: "blob",
-		Sha: readme.Sha,
+		Sha:  readme.Sha,
 	}
 	marshalled, err = json.Marshal(body)
 	if err != nil {
@@ -422,17 +427,16 @@ func main() {
 	readme = nil
 	runtime.GC()
 
-
 	doOrDie := func(method, url string, payload []byte) *http.Response {
 
-		fmt.Println(method + "ing to", url)
+		fmt.Println(method+"ing to", url)
 		req, err := http.NewRequest(method, url, bytes.NewReader(payload))
 		if err != nil {
 			panic(err)
 		}
 		req.Header.Set("Accept", "application/json")
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer " + GH_TOKEN)
+		req.Header.Set("Authorization", "Bearer "+GH_TOKEN)
 		response, err = http.DefaultClient.Do(req)
 		if err != nil {
 			panic(err)
@@ -445,13 +449,13 @@ func main() {
 		fmt.Println(method + "ed.")
 		return response
 	}
-	response = doOrDie("POST", REPO_URL + "/git/trees", marshalled)
+	response = doOrDie("POST", REPO_URL+"/git/trees", marshalled)
 	text, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		panic(err)
 	}
 	response.Body.Close()
-	tree := &struct{
+	tree := &struct {
 		Sha string
 	}{}
 	json.Unmarshal(text, tree)
@@ -461,21 +465,21 @@ func main() {
 
 	commit := &GhCommit{
 		Message: newUpdateMessage,
-		Tree: tree.Sha,
+		Tree:    tree.Sha,
 	}
 	marshalled, err = json.Marshal(commit)
 	if err != nil {
 		panic(err)
 	}
-	response = doOrDie("POST", REPO_URL + "/git/commits", marshalled)
+	response = doOrDie("POST", REPO_URL+"/git/commits", marshalled)
 	text, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		panic(err)
 	}
 	response.Body.Close()
-	patch := &struct{
-		Sha string `json:"sha"`
-		Force bool `json:"force,omitempty"`
+	patch := &struct {
+		Sha   string `json:"sha"`
+		Force bool   `json:"force,omitempty"`
 	}{}
 	json.Unmarshal(text, patch)
 	patch.Force = true
@@ -483,7 +487,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	response = doOrDie("PATCH", REPO_URL + "/git/refs/heads/master", marshalled)
+	response = doOrDie("PATCH", REPO_URL+"/git/refs/heads/master", marshalled)
 	response.Body.Close()
 	fmt.Println("Done.")
 }
