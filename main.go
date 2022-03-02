@@ -98,12 +98,13 @@ func main() {
 		response *http.Response
 		err      error
 	)
+	HOSTNAMES := make(map[string]bool)
 	lastUpdateMessage := ""
 	flag.Parse()
 	if *ifForced == false {
 
 		response := getOrDie(REPO_URL + "/commits")
-		text, err := ioutil.ReadAll(response.Body)
+		text, err = ioutil.ReadAll(response.Body)
 		if err != nil {
 			panic(err)
 		}
@@ -149,6 +150,8 @@ func main() {
 	urls := bestProvider.urls
 	fmt.Println("Best provider urls are:", urls)
 
+	// Ingored hostnames
+
 	response = getOrDie("https://bitbucket.org/ValdikSS/antizapret/raw/master/ignorehosts.txt")
 	fmt.Println("Downloaded ingoredhosts.")
 
@@ -159,6 +162,8 @@ func main() {
 	}
 	response.Body.Close()
 	fmt.Println("Parsed ingoredhosts.txt.")
+
+	// Not found hostnames
 
 	response = getOrDie("https://raw.githubusercontent.com/zapret-info/z-i/master/nxdomain.txt")
 	fmt.Println("Downloaded nxdomians.")
@@ -174,6 +179,25 @@ func main() {
 	}
 	response.Body.Close()
 	fmt.Println("Parsed nxdomians.")
+
+	// ТСПУ (TSPU), list of shaped hostnames
+
+	response = getOrDie("https://registry.censortracker.org/registry-api/domains/?countryCode=ru")
+	text, err = ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	response.Body.Close()
+	tspus := &[]struct {
+		Domains []string
+	}{}
+	json.Unmarshal(text, tspus)
+	for _, record := range (*tspus) {
+		for _, hostname := range record.Domains {
+			HOSTNAMES[hostname] = true
+		}
+	}
+	fmt.Println("Got shaped hostnames (TSPU).")
 
 	var lastError error
 	for _, url := range urls {
@@ -199,7 +223,7 @@ func main() {
 	reader.Comma = ';'
 	reader.FieldsPerRecord = 6
 	idna := idna.New()
-	hostnames := map[string]bool{
+	customHostnames := map[string]bool{
 		// Extremism:
 		"pravdabeslana.ru": true,
 		// WordPress:
@@ -231,6 +255,11 @@ func main() {
 		"deviantart.net": true, // https://groups.google.com/forum/#!topic/anticensority/uXFsOS1lQ2
 		"kaztorka.org":   true, // https://groups.google.com/forum/#!msg/anticensority/vweNToREQ1o/3EbhCDjfAgAJ
 	}
+	for hostname, ifBlocked := range customHostnames {
+		HOSTNAMES[hostname] = ifBlocked
+	}
+	customHostnames = nil
+	runtime.GC()
 	ipv4 := make(map[string]bool)
 	ipv4subnets := make(map[string]bool)
 	ipv6 := make(map[string]bool)
@@ -261,7 +290,7 @@ func main() {
 				if strings.HasPrefix(hostname, "www.") {
 					hostname = hostname[4:]
 				}
-				hostnames[hostname] = true
+				HOSTNAMES[hostname] = true
 				ifHasHostname = true
 			}
 		}
@@ -335,12 +364,12 @@ func main() {
 	ipv4Map := getOptimizedMap(ipv4)
 	//ipv6Map := getOptimizedMap(ipv6)
 	ipv4subnetsKeys := getSubnets(ipv4subnets)
-	hostnamesMap := getOptimizedMap(hostnames)
+	hostnamesMap := getOptimizedMap(HOSTNAMES)
 
 	ipv4 = nil
 	ipv6 = nil
 	ipv4subnets = nil
-	hostnames = nil
+	HOSTNAMES = nil
 	runtime.GC()
 	fmt.Println("Opening template...")
 
