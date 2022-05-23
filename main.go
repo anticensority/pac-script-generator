@@ -273,7 +273,7 @@ func main() {
 			panic(err)
 		}
 		ifHasHostname := false
-		hostnamesSlice := strings.Split(record[1], " | ")
+		hostnamesSlice := strings.Split(record[1], "|")
 		for _, hostname := range hostnamesSlice {
 			hostname = strings.Trim(hostname, " \t")
 			if hostname != "" {
@@ -295,7 +295,7 @@ func main() {
 			}
 		}
 		if !ifHasHostname {
-			ips := strings.Split(record[0], " | ")
+			ips := strings.Split(record[0], "|")
 			for _, ip := range ips {
 				ip = strings.Trim(ip, " \t")
 				ifIpV6 := strings.ContainsAny(ip, ":")
