@@ -1,0 +1,22 @@
+name: Generate and publish
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  generate:
+    name: Generate and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.18.2
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18.2
+
+      - name: Generate and publish
+        run: go run main.goa
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: anticensority/generated-pac-scripts
+
