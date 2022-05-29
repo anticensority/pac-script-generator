@@ -1,9 +1,9 @@
 name: Generate and publish
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron:  '0 * * * *'
   
 
 jobs:
