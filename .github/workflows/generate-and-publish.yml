@@ -25,3 +25,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_REPO: anticensority/generated-pac-scripts
 
+      - name: Prevent inactivity for 60 days w/o any commit
+        uses: gautamkrishnar/keepalive-workflow@v1
