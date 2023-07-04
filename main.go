@@ -150,7 +150,7 @@ func main() {
 	urls := bestProvider.urls
 	fmt.Println("Best provider urls are:", urls)
 
-	// Ingored hostnames
+	// Ignored hostnames
 
 	response = getOrDie("https://bitbucket.org/ValdikSS/antizapret/raw/master/ignorehosts.txt")
 	fmt.Println("Downloaded ingoredhosts.")
