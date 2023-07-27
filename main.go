@@ -37,15 +37,15 @@ type blockProvider struct {
 var blockProviders = []blockProvider{
 	blockProvider{
 		urls: []string{
-			"https://svn.code.sf.net/p/zapret-info/code/dump.csv",
-		},
-		rssUrl: "https://sourceforge.net/p/zapret-info/code/feed",
-	},
-	blockProvider{
-		urls: []string{
 			"https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv",
 		},
 		rssUrl: "https://github.com/zapret-info/z-i/commits/master.atom",
+	},	
+	blockProvider{
+		urls: []string{
+			"https://svn.code.sf.net/p/zapret-info/code/dump.csv",
+		},
+		rssUrl: "https://sourceforge.net/p/zapret-info/code/feed",
 	},
 	//blockProvider {
 	//	urls: []string{
