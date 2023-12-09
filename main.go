@@ -224,7 +224,10 @@ func main() {
 	reader.FieldsPerRecord = 6
 	idna := idna.New()
 	customHostnames := map[string]bool{
+		// TSPU-extra
 		"ua": true, // Whole *.ua.
+		"rebrand.ly": true,
+		//
 		"1.1.1.1": true,
 		// Extremism:
 		"pravdabeslana.ru": true,
