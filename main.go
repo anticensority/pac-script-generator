@@ -225,6 +225,7 @@ func main() {
 	idna := idna.New()
 	customHostnames := map[string]bool{
 		"ua": true, // Whole *.ua.
+		"1.1.1.1": true,
 		// Extremism:
 		"pravdabeslana.ru": true,
 		// WordPress:
