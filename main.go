@@ -224,6 +224,7 @@ func main() {
 	reader.FieldsPerRecord = 6
 	idna := idna.New()
 	customHostnames := map[string]bool{
+		"ua": true, // Whole *.ua.
 		// Extremism:
 		"pravdabeslana.ru": true,
 		// WordPress:
