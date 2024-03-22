@@ -221,7 +221,7 @@ func main() {
 
 	reader := csv.NewReader(transform.NewReader(csvIn, charmap.Windows1251.NewDecoder()))
 	reader.Comma = ';'
-	reader.FieldsPerRecord = 6
+	reader.FieldsPerRecord = 3
 	idna := idna.New()
 	customHostnames := map[string]bool{
 		// TSPU-extra
