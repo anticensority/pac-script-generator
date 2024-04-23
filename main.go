@@ -277,7 +277,7 @@ func main() {
 			}
 			panic(err)
 		}
-		ifHasHostname := false
+		ifHasHostname := len(record) > 1
 		hostnamesSlice := strings.Split(record[1], "|")
 		for _, hostname := range hostnamesSlice {
 			hostname = strings.Trim(hostname, " \t")
