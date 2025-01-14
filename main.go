@@ -180,12 +180,13 @@ func main() {
 	response.Body.Close()
 	fmt.Println("Parsed nxdomians.")
 
-	// ТСПУ (TSPU), list of shaped hostnames
+	/* ТСПУ (TSPU), list of shaped hostnames
+        UPD: Commented out because doesn't work any more as of 14.01.2025.
 
 	response = getOrDie("https://registry.censortracker.org/registry-api/domains/?countryCode=ru")
 	text, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)
+		panic(err)ru/news/856342/
 	}
 	response.Body.Close()
 	tspus := &[]struct {
@@ -198,6 +199,7 @@ func main() {
 		}
 	}
 	fmt.Println("Got shaped hostnames (TSPU).")
+        */
 
 	var lastError error
 	for _, url := range urls {
