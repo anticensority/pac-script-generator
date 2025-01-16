@@ -185,7 +185,7 @@ func main() {
 	response = getOrDie("https://reestr.rublacklist.net/registry-api/domains/?countryCode=ru")
 	text, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)ru/news/856342/
+		panic(err)
 	}
 	response.Body.Close()
 	tspus := &[]struct {
