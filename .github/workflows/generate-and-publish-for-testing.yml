@@ -1,0 +1,23 @@
+name: "TEST: Generate and publish"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: "JOB: Generate and publish for testing"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone
+        uses: actions/checkout@v3
+
+      - name: Set up Go 1.18.2
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18.2
+
+      - name: Generate and publish
+        run: "go run main.go --force"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: anticensority/for-testing
