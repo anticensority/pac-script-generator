@@ -17,7 +17,7 @@ jobs:
           go-version: 1.18.2
 
       - name: Generate and publish
-        run: "go run main.go --force"
+        run: go run main.go --force
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_REPO: anticensority/for-testing

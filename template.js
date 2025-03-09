@@ -1,12 +1,14 @@
 'use strict';
-// Version: 0.3
 
 if (/*@cc_on!@*/!1) { // Is IE?
   throw new TypeError('https://rebrand.ly/ac-anticensority');
 }
 
-const TOR_PROXIES = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050; DIRECT';
-const PROXY_STRING = TOR_PROXIES;
+// 1861 was chosen for https://en.wikipedia.org/wiki/Emancipation_reform_of_1861.
+// Even ports are reserved for future use.
+const CUSTOM_PROXIES = 'HTTPS localhost:18611; PROXY localhost:18613; SOCKS5 localhost:18615; SOCKS4 localhost:18617; SOCKS localhost:18619';
+const TOR_PROXIES = 'SOCKS5 localhost:9150; SOCKS5 localhost:9050';
+const PROXY_STRING = [CUSTOM_PROXIES, TOR_PROXIES, 'DIRECT'].join('; ');
 
 const inputs = {{.INPUTS}};
 const maskedAddrMaskAddrPairs = inputs.MASKED_SUBNETS;
